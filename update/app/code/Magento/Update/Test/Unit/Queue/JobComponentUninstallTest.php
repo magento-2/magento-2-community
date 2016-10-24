@@ -26,15 +26,11 @@ class JobComponentUninstallTest extends \PHPUnit_Framework_TestCase
 
     public function testExecute()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobComponentUninstall = $om->create(
-            'Magento\Update\Queue\JobComponentUninstall',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => ['components' => [['name' => 'vendor/package']]],
-                'name' => 'component:uninstall',
-            ]
+        $jobComponentUninstall = new \Magento\Update\Queue\JobComponentUninstall(
+            'component:uninstall',
+            ['components' => [['name' => 'vendor/package']]],
+            $this->composerApp,
+            $this->status
         );
         $this->status->expects($this->atLeastOnce())->method('add');
         $this->composerApp->expects($this->at(0))
@@ -54,15 +50,11 @@ class JobComponentUninstallTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteNoComponent()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobComponentUninstall = $om->create(
-            'Magento\Update\Queue\JobComponentUninstall',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => [],
-                'name' => 'component:uninstall',
-            ]
+        $jobComponentUninstall = new \Magento\Update\Queue\JobComponentUninstall(
+            'component:uninstall',
+            [],
+            $this->composerApp,
+            $this->status
         );
         $this->composerApp->expects($this->never())->method('runComposerCommand');
         $jobComponentUninstall->execute();
@@ -74,15 +66,11 @@ class JobComponentUninstallTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteException()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobComponentUninstall = $om->create(
-            'Magento\Update\Queue\JobComponentUninstall',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => ['components' => [['name' => 'vendor/package']]],
-                'name' => 'component:uninstall'
-            ]
+        $jobComponentUninstall = new \Magento\Update\Queue\JobComponentUninstall(
+            'component:uninstall',
+            ['components' => [['name' => 'vendor/package']]],
+            $this->composerApp,
+            $this->status
         );
         $this->status->expects($this->atLeastOnce())->method('add');
         $this->composerApp->expects($this->at(0))
