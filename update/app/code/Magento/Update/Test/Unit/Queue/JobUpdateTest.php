@@ -33,17 +33,14 @@ class JobUpdateTest extends \PHPUnit_Framework_TestCase
 
     public function testExecute()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobUpdate = $om->create(
-            'Magento\Update\Queue\JobUpdate',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => ['components' => [['name' => 'vendor/package', 'version' => '1.0']]],
-                'queue' => $this->queue,
-                'name' => 'setup:upgrade',
-            ]
+        $jobUpdate = new \Magento\Update\Queue\JobUpdate(
+            'setup:upgrade',
+            ['components' => [['name' => 'vendor/package', 'version' => '1.0']]],
+            $this->queue,
+            $this->composerApp,
+            $this->status
         );
+
         $this->status->expects($this->atLeastOnce())->method('add');
         $this->composerApp->expects($this->at(0))
             ->method('runComposerCommand')
@@ -63,16 +60,12 @@ class JobUpdateTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteNoRequire()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobUpdate = $om->create(
-            'Magento\Update\Queue\JobUpdate',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => [],
-                'queue' => $this->queue,
-                'name' => 'setup:upgrade',
-            ]
+        $jobUpdate = new \Magento\Update\Queue\JobUpdate(
+            'setup:upgrade',
+            [],
+            $this->queue,
+            $this->composerApp,
+            $this->status
         );
         $this->composerApp->expects($this->never())->method('runComposerCommand');
         $this->queue->expects($this->never())->method('addJobs');
@@ -85,16 +78,12 @@ class JobUpdateTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecuteException()
     {
-        $om = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
-        $jobUpdate = $om->create(
-            'Magento\Update\Queue\JobUpdate',
-            [
-                'composerApp' => $this->composerApp,
-                'status' => $this->status,
-                'params' => ['components' => [['name' => 'vendor/package', 'version' => '1.0']]],
-                'queue' => $this->queue,
-                'name' => 'setup:upgrade',
-            ]
+        $jobUpdate = new \Magento\Update\Queue\JobUpdate(
+            'setup:upgrade',
+            ['components' => [['name' => 'vendor/package', 'version' => '1.0']]],
+            $this->queue,
+            $this->composerApp,
+            $this->status
         );
         $this->status->expects($this->atLeastOnce())->method('add');
         $this->composerApp->expects($this->at(0))
