@@ -107,8 +107,7 @@ FIRST_UPDATE;
         $status->add($firstUpdate);
         $textAfterFirstUpdate = "$originalStatus\n{$firstUpdate}";
         $this->verifyAddedStatus($textAfterFirstUpdate, $this->tmpStatusFilePath, 1);
-        $textAfterFirstUpdate = $originalStatus . $this->getLogFilePattern($firstUpdate);
-        $this->verifyAddedStatus($textAfterFirstUpdate, $this->tmpStatusLogFilePath, 3*1);
+        $this->verifyAddedStatus($textAfterFirstUpdate, $this->tmpStatusLogFilePath, 1);
 
         $secondUpdate = <<<SECOND_UPDATE
 Donec lacus nunc, viverra nec, blandit vel, egestas et, augue.
@@ -119,9 +118,7 @@ SECOND_UPDATE;
         $this->assertInstanceOf('Magento\Update\Status', $status->add($secondUpdate));
         $textAfterSecondUpdate = "{$originalStatus}\n{$firstUpdate}\n{$secondUpdate}";
         $this->verifyAddedStatus($textAfterSecondUpdate, $this->tmpStatusFilePath, 2);
-        $textAfterSecondUpdate = $originalStatus .
-            $this->getLogFilePattern($firstUpdate) . ' ' . $this->getLogFilePattern($secondUpdate);
-        $this->verifyAddedStatus($textAfterSecondUpdate, $this->tmpStatusLogFilePath, 3*2);
+        $this->verifyAddedStatus($textAfterSecondUpdate, $this->tmpStatusLogFilePath, 2);
     }
 
     public function testAddToNotExistingFile()
@@ -134,7 +131,7 @@ SECOND_UPDATE;
 Praesent blandit dolor.
 Sed non quam.
 STATUS_UPDATE;
-        $status->add($statusUpdate);
+        $status->add($statusUpdate, $this->tmpStatusFilePath);
         $this->verifyAddedStatus($statusUpdate, $this->tmpStatusFilePath, 1);
     }
 
@@ -210,18 +207,7 @@ STATUS_UPDATE;
         $this->assertCount($expectedNumberOfTimeEntries, $matches[0]);
 
         /** Eliminate current date/time entries from the actual status content before text comparison */
-        $actualStatusText = trim(preg_replace('/\[.*?\]\s/', '', $actualStatusText));
+        $actualStatusText = preg_replace('/\[.*?\]\s/', '', $actualStatusText);
         $this->assertEquals($expectedTextAfterUpdate, $actualStatusText);
-    }
-
-    /**
-     * Get log pattern
-     *
-     * @param string $msg
-     * @return string
-     */
-    private function getLogFilePattern($msg)
-    {
-        return 'update-cron.INFO: ' . preg_replace('/' . PHP_EOL . '/', ' ', $msg);
     }
 }
