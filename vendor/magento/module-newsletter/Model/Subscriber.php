@@ -399,11 +399,6 @@ class Subscriber extends \Magento\Framework\Model\AbstractModel
             $this->setSubscriberConfirmCode($this->randomSequence());
         }
 
-        $sendConfirmationEmail = true;
-        if ($this->getStatus() == self::STATUS_SUBSCRIBED && !$this->getCustomerId()) {
-            $sendConfirmationEmail = false;
-        }
-
         $isConfirmNeed = $this->_scopeConfig->getValue(
             self::XML_PATH_CONFIRMATION_FLAG,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
@@ -447,16 +442,14 @@ class Subscriber extends \Magento\Framework\Model\AbstractModel
         $this->setStatusChanged(true);
 
         try {
-            if ($sendConfirmationEmail === true) {
-                if ($isConfirmNeed === true
-                    && $isOwnSubscribes === false
-                ) {
-                    $this->sendConfirmationRequestEmail();
-                } else {
-                    $this->sendConfirmationSuccessEmail();
-                }
-            }
             $this->save();
+            if ($isConfirmNeed === true
+                && $isOwnSubscribes === false
+            ) {
+                $this->sendConfirmationRequestEmail();
+            } else {
+                $this->sendConfirmationSuccessEmail();
+            }
             return $this->getStatus();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

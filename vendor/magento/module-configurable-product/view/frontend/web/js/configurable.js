@@ -23,11 +23,13 @@ define([
             state: {},
             priceFormat: {},
             optionTemplate: '<%- data.label %>' +
-            '<% if (data.finalPrice.value) { %>' +
+            "<% if (typeof data.finalPrice.value !== 'undefined') { %>" +
             ' <%- data.finalPrice.formatted %>' +
             '<% } %>',
             mediaGallerySelector: '[data-gallery-role=gallery-placeholder]',
-            mediaGalleryInitial: null
+            mediaGalleryInitial: null,
+            slyOldPriceSelector: '.sly-old-price',
+            onlyMainImg: false
         },
 
         /**
@@ -245,6 +247,7 @@ define([
                 this._resetChildren(element);
             }
             this._reloadPrice();
+            this._displayRegularPriceBlock(this.simpleProduct);
             this._changeProductImage();
         },
 
@@ -253,14 +256,45 @@ define([
          * @private
          */
         _changeProductImage: function () {
-            var images = this.options.spConfig.images[this.simpleProduct],
+            var images,
+                initialImages = $.extend(true, [], this.options.mediaGalleryInitial),
                 galleryObject = $(this.options.mediaGallerySelector).data('gallery');
+
+            if (this.options.spConfig.images[this.simpleProduct]) {
+                images = $.extend(true, [], this.options.spConfig.images[this.simpleProduct]);
+            }
+
+            function updateGallery(imagesArr) {
+                var imgToUpdate,
+                    mainImg;
+
+                mainImg = imagesArr.filter(function (img) {
+                    return img.isMain;
+                });
+
+                imgToUpdate = mainImg.length ? mainImg[0] : imagesArr[0];
+                galleryObject.updateDataByIndex(0, imgToUpdate);
+                galleryObject.seek(1);
+            }
 
             if (galleryObject) {
                 if (images) {
-                    galleryObject.updateData(images);
+                    images.map(function (img) {
+                        img.type = 'image';
+                    });
+
+                    if (this.options.onlyMainImg) {
+                        updateGallery(images);
+                    } else {
+                        galleryObject.updateData(images)
+                    }
                 } else {
-                    galleryObject.updateData(this.options.mediaGalleryInitial);
+                    if (this.options.onlyMainImg) {
+                        updateGallery(initialImages);
+                    } else {
+                        galleryObject.updateData(this.options.mediaGalleryInitial);
+                        $(this.options.mediaGallerySelector).AddFotoramaVideoEvents();
+                    }
                 }
             }
         },
@@ -410,7 +444,7 @@ define([
         },
 
         /**
-         * Returns pracies for configured products
+         * Returns prices for configured products
          *
          * @param {*} config - Products configuration
          * @returns {*}
@@ -453,6 +487,23 @@ define([
                 undefined :
                 _.first(config.allowedProducts);
 
+        },
+
+        /**
+         * Show or hide regular price block
+         *
+         * @param {*} optionId
+         * @private
+         */
+        _displayRegularPriceBlock: function (optionId) {
+            if (typeof optionId != 'undefined'
+                && this.options.spConfig.optionPrices[optionId].oldPrice.amount
+                != this.options.spConfig.optionPrices[optionId].finalPrice.amount
+            ) {
+                $(this.options.slyOldPriceSelector).show();
+            } else {
+                $(this.options.slyOldPriceSelector).hide();
+            }
         }
 
     });

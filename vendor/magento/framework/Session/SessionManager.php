@@ -238,7 +238,7 @@ class SessionManager implements SessionManagerInterface
     public function getData($key = '', $clear = false)
     {
         $data = $this->storage->getData($key);
-        if ($clear && $data) {
+        if ($clear && isset($data)) {
             $this->storage->unsetData($key);
         }
         return $data;
@@ -298,6 +298,7 @@ class SessionManager implements SessionManagerInterface
             return;
         }
 
+        session_regenerate_id(true);
         session_destroy();
         if ($options['send_expire_cookie']) {
             $this->expireSessionCookie();
@@ -470,7 +471,7 @@ class SessionManager implements SessionManagerInterface
             return $this;
         }
         if ($this->isSessionExists()) {
-            session_regenerate_id(true);
+            session_regenerate_id(false);
         } else {
             session_start();
         }
