@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 
@@ -11,7 +11,6 @@ namespace Magento\Payment\Model\Method;
 use Magento\Framework\DataObject;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Model\MethodInterface;
-use Magento\Payment\Observer\AbstractDataAssignObserver;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Quote\Api\Data\PaymentMethodInterface;
@@ -21,7 +20,6 @@ use Magento\Quote\Api\Data\PaymentMethodInterface;
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @deprecated
  */
 abstract class AbstractMethod extends \Magento\Framework\Model\AbstractExtensibleModel implements
     MethodInterface,
@@ -70,12 +68,12 @@ abstract class AbstractMethod extends \Magento\Framework\Model\AbstractExtensibl
     /**
      * @var string
      */
-    protected $_formBlockType = \Magento\Payment\Block\Form::class;
+    protected $_formBlockType = 'Magento\Payment\Block\Form';
 
     /**
      * @var string
      */
-    protected $_infoBlockType = \Magento\Payment\Block\Info::class;
+    protected $_infoBlockType = 'Magento\Payment\Block\Info';
 
     /**
      * Payment Method feature
@@ -770,24 +768,11 @@ abstract class AbstractMethod extends \Magento\Framework\Model\AbstractExtensibl
      */
     public function assignData(\Magento\Framework\DataObject $data)
     {
-        $this->_eventManager->dispatch(
-            'payment_method_assign_data_' . $this->getCode(),
-            [
-                AbstractDataAssignObserver::METHOD_CODE => $this,
-                AbstractDataAssignObserver::MODEL_CODE => $this->getInfoInstance(),
-                AbstractDataAssignObserver::DATA_CODE => $data
-            ]
-        );
-
-        $this->_eventManager->dispatch(
-            'payment_method_assign_data',
-            [
-                AbstractDataAssignObserver::METHOD_CODE => $this,
-                AbstractDataAssignObserver::MODEL_CODE => $this->getInfoInstance(),
-                AbstractDataAssignObserver::DATA_CODE => $data
-            ]
-        );
-
+        if (is_array($data)) {
+            $this->getInfoInstance()->addData($data);
+        } elseif ($data instanceof \Magento\Framework\DataObject) {
+            $this->getInfoInstance()->addData($data->getData());
+        }
         return $this;
     }
 

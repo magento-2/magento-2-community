@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 /*jshint browser:true jquery:true*/
@@ -23,13 +23,11 @@ define([
             state: {},
             priceFormat: {},
             optionTemplate: '<%- data.label %>' +
-            "<% if (typeof data.finalPrice.value !== 'undefined') { %>" +
+            '<% if (data.finalPrice.value) { %>' +
             ' <%- data.finalPrice.formatted %>' +
             '<% } %>',
             mediaGallerySelector: '[data-gallery-role=gallery-placeholder]',
-            mediaGalleryInitial: null,
-            slyOldPriceSelector: '.sly-old-price',
-            onlyMainImg: false
+            mediaGalleryInitial: null
         },
 
         /**
@@ -247,7 +245,6 @@ define([
                 this._resetChildren(element);
             }
             this._reloadPrice();
-            this._displayRegularPriceBlock(this.simpleProduct);
             this._changeProductImage();
         },
 
@@ -256,45 +253,14 @@ define([
          * @private
          */
         _changeProductImage: function () {
-            var images,
-                initialImages = $.extend(true, [], this.options.mediaGalleryInitial),
+            var images = this.options.spConfig.images[this.simpleProduct],
                 galleryObject = $(this.options.mediaGallerySelector).data('gallery');
-
-            if (this.options.spConfig.images[this.simpleProduct]) {
-                images = $.extend(true, [], this.options.spConfig.images[this.simpleProduct]);
-            }
-
-            function updateGallery(imagesArr) {
-                var imgToUpdate,
-                    mainImg;
-
-                mainImg = imagesArr.filter(function (img) {
-                    return img.isMain;
-                });
-
-                imgToUpdate = mainImg.length ? mainImg[0] : imagesArr[0];
-                galleryObject.updateDataByIndex(0, imgToUpdate);
-                galleryObject.seek(1);
-            }
 
             if (galleryObject) {
                 if (images) {
-                    images.map(function (img) {
-                        img.type = 'image';
-                    });
-
-                    if (this.options.onlyMainImg) {
-                        updateGallery(images);
-                    } else {
-                        galleryObject.updateData(images)
-                    }
+                    galleryObject.updateData(images);
                 } else {
-                    if (this.options.onlyMainImg) {
-                        updateGallery(initialImages);
-                    } else {
-                        galleryObject.updateData(this.options.mediaGalleryInitial);
-                        $(this.options.mediaGallerySelector).AddFotoramaVideoEvents();
-                    }
+                    galleryObject.updateData(this.options.mediaGalleryInitial);
                 }
             }
         },
@@ -444,7 +410,7 @@ define([
         },
 
         /**
-         * Returns prices for configured products
+         * Returns pracies for configured products
          *
          * @param {*} config - Products configuration
          * @returns {*}
@@ -487,23 +453,6 @@ define([
                 undefined :
                 _.first(config.allowedProducts);
 
-        },
-
-        /**
-         * Show or hide regular price block
-         *
-         * @param {*} optionId
-         * @private
-         */
-        _displayRegularPriceBlock: function (optionId) {
-            if (typeof optionId != 'undefined'
-                && this.options.spConfig.optionPrices[optionId].oldPrice.amount
-                != this.options.spConfig.optionPrices[optionId].finalPrice.amount
-            ) {
-                $(this.options.slyOldPriceSelector).show();
-            } else {
-                $(this.options.slyOldPriceSelector).hide();
-            }
         }
 
     });

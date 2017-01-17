@@ -1,10 +1,9 @@
 <?php
 
 /*
- * This file is part of PHP CS Fixer.
+ * This file is part of the PHP CS utility.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
- *     Dariusz Rumiński <dariusz.ruminski@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
@@ -35,8 +34,9 @@ class LowercaseConstantsFixer extends AbstractFixer
             }
 
             if (
-                $this->isNeighbourAccepted($tokens, $tokens->getPrevMeaningfulToken($index)) &&
-                $this->isNeighbourAccepted($tokens, $tokens->getNextMeaningfulToken($index))
+                $this->isNeighbourAccepted($tokens, $tokens->getPrevNonWhitespace($index))
+                &&
+                $this->isNeighbourAccepted($tokens, $tokens->getNextNonWhitespace($index))
             ) {
                 $token->setContent(strtolower($token->getContent()));
             }
@@ -79,6 +79,10 @@ class LowercaseConstantsFixer extends AbstractFixer
             if (defined('T_INSTEADOF')) {
                 $forbiddenTokens[] = T_INSTEADOF;
             }
+        }
+
+        if (null === $index) {
+            return true;
         }
 
         $token = $tokens[$index];

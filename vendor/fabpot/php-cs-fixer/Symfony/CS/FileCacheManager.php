@@ -1,18 +1,15 @@
 <?php
 
 /*
- * This file is part of PHP CS Fixer.
+ * This file is part of the PHP CS utility.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
- *     Dariusz Rumiński <dariusz.ruminski@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
 
 namespace Symfony\CS;
-
-use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * Class supports caching information about state of fixing files.
@@ -120,12 +117,7 @@ class FileCacheManager
         }
 
         $content = file_get_contents($this->dir.self::CACHE_FILE);
-        $data = @unserialize($content);
-
-        // ignore corrupted serialized data
-        if (!is_array($data)) {
-            return;
-        }
+        $data = unserialize($content);
 
         // BC for old cache without fixers list
         if (!isset($data['fixers'])) {
@@ -152,8 +144,6 @@ class FileCacheManager
             )
         );
 
-        if (false === @file_put_contents($this->dir.self::CACHE_FILE, $data, LOCK_EX)) {
-            throw new IOException(sprintf('Failed to write file "%s".', self::CACHE_FILE), 0, null, $this->dir.self::CACHE_FILE);
-        }
+        file_put_contents($this->dir.self::CACHE_FILE, $data, LOCK_EX);
     }
 }

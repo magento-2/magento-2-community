@@ -1,10 +1,9 @@
 <?php
 
 /*
- * This file is part of PHP CS Fixer.
+ * This file is part of the PHP CS utility.
  *
  * (c) Fabien Potencier <fabien@symfony.com>
- *     Dariusz Rumiński <dariusz.ruminski@gmail.com>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
@@ -28,15 +27,20 @@ class BlanklineAfterOpenTagFixer extends AbstractFixer
     {
         $tokens = Tokens::fromCode($content);
 
-        // ignore files with short open tag and ignore non-monolithic files
-        if (!$tokens[0]->isGivenKind(T_OPEN_TAG) || !$tokens->isMonolithicPhp()) {
+        // ignore non-monolithic files
+        if (!$tokens->isMonolithicPhp()) {
+            return $content;
+        }
+
+        // ignore files with short open tag
+        if (!$tokens[0]->isGivenKind(T_OPEN_TAG)) {
             return $content;
         }
 
         $newlineFound = false;
         /** @var Token $token */
         foreach ($tokens as $token) {
-            if ($token->isWhitespace() && false !== strpos($token->getContent(), "\n")) {
+            if ($token->isWhitespace(array('whitespaces' => "\n"))) {
                 $newlineFound = true;
                 break;
             }
@@ -66,14 +70,5 @@ class BlanklineAfterOpenTagFixer extends AbstractFixer
     public function getDescription()
     {
         return 'Ensure there is no code on the same line as the PHP open tag and it is followed by a blankline.';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getPriority()
-    {
-        // should be run before the NoBlankLinesBeforeNamespaceFixer
-        return 1;
     }
 }

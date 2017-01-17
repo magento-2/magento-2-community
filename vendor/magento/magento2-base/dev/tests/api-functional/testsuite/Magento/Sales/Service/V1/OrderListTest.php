@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Sales\Service\V1;
@@ -49,7 +49,6 @@ class OrderListTest extends WebapiAbstract
                 $filterBuilder
                     ->setField('status')
                     ->setValue('processing')
-                    ->setConditionType('eq')
                     ->create(),
             ]
         );
@@ -69,19 +68,7 @@ class OrderListTest extends WebapiAbstract
         ];
 
         $result = $this->_webApiCall($serviceInfo, $requestData);
-        static::assertArrayHasKey('items', $result);
-        static::assertCount(1, $result['items']);
-        static::assertArrayHasKey('search_criteria', $result);
-        static::assertEquals($searchData, $result['search_criteria']);
-
-        $item = $result['items'][0];
-        static::assertNotEmpty($item['payment']);
-
-        // check what additional information is single dimension array
-        static::assertEquals(
-            count($item['payment']['additional_information']),
-            count($item['payment']['additional_information']),
-            COUNT_RECURSIVE
-        );
+        $this->assertArrayHasKey('items', $result);
+        $this->assertCount(1, $result['items']);
     }
 }

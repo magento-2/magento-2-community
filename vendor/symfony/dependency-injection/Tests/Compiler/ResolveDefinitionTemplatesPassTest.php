@@ -233,36 +233,6 @@ class ResolveDefinitionTemplatesPassTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($container->getDefinition('child1')->isLazy());
     }
 
-    public function testSetAutowiredOnServiceHasParent()
-    {
-        $container = new ContainerBuilder();
-
-        $container->register('parent', 'stdClass');
-
-        $container->setDefinition('child1', new DefinitionDecorator('parent'))
-            ->setAutowired(true)
-        ;
-
-        $this->process($container);
-
-        $this->assertTrue($container->getDefinition('child1')->isAutowired());
-    }
-
-    public function testSetAutowiredOnServiceIsParent()
-    {
-        $container = new ContainerBuilder();
-
-        $container->register('parent', 'stdClass')
-            ->setAutowired(true)
-        ;
-
-        $container->setDefinition('child1', new DefinitionDecorator('parent'));
-
-        $this->process($container);
-
-        $this->assertTrue($container->getDefinition('child1')->isAutowired());
-    }
-
     public function testDeepDefinitionsResolving()
     {
         $container = new ContainerBuilder();
@@ -306,12 +276,10 @@ class ResolveDefinitionTemplatesPassTest extends \PHPUnit_Framework_TestCase
         $container->register('parent', 'stdClass');
 
         $container->setDefinition('child1', new DefinitionDecorator('parent'))
-            ->setDecoratedService('foo', 'foo_inner', 5)
+            ->setDecoratedService('foo', 'foo_inner')
         ;
 
-        $this->process($container);
-
-        $this->assertEquals(array('foo', 'foo_inner', 5), $container->getDefinition('child1')->getDecoratedService());
+        $this->assertEquals(array('foo', 'foo_inner', 0), $container->getDefinition('child1')->getDecoratedService());
     }
 
     public function testDecoratedServiceCopiesDeprecatedStatusFromParent()
@@ -360,11 +328,8 @@ class ResolveDefinitionTemplatesPassTest extends \PHPUnit_Framework_TestCase
 
         $this->process($container);
 
-        $childDef = $container->getDefinition('child');
-        $this->assertEquals(array('Foo', 'Bar'), $childDef->getAutowiringTypes());
-
-        $parentDef = $container->getDefinition('parent');
-        $this->assertSame(array('Foo'), $parentDef->getAutowiringTypes());
+        $def = $container->getDefinition('child');
+        $this->assertEquals(array('Foo', 'Bar'), $def->getAutowiringTypes());
     }
 
     protected function process(ContainerBuilder $container)

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\Payment\Test\Unit\Gateway\Data\Quote;
@@ -23,7 +23,7 @@ class AddressAdapterTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->quoteAddressMock = $this->getMockBuilder(\Magento\Quote\Api\Data\AddressInterface::class)
+        $this->quoteAddressMock = $this->getMockBuilder('Magento\Quote\Api\Data\AddressInterface')
             ->getMockForAbstractClass();
 
         $this->model = new AddressAdapter($this->quoteAddressMock);

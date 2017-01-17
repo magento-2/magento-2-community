@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 
@@ -14,11 +14,6 @@
  */
 namespace Magento\Catalog\Model\Template;
 
-/**
- * Work with catalog(store, website) urls
- *
- * @package Magento\Catalog\Model\Template
- */
 class Filter extends \Magento\Framework\Filter\Template
 {
     /**

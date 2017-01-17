@@ -1,13 +1,9 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\ConfigurableProduct\Controller\Adminhtml;
-
-use Magento\Catalog\Model\Product;
-use Magento\Framework\Registry;
-use Magento\TestFramework\ObjectManager;
 
 /**
  * @magentoAppArea adminhtml
@@ -20,23 +16,21 @@ class ProductTest extends \Magento\TestFramework\TestCase\AbstractBackendControl
     public function testSaveActionAssociatedProductIds()
     {
         $associatedProductIds = [3, 14, 15, 92];
-        $associatedProductIdsJSON = json_encode($associatedProductIds);
         $this->getRequest()->setPostValue(
             [
                 'attributes' => [$this->_getConfigurableAttribute()->getId()],
-                'product' => ['associated_product_ids_serialized' => $associatedProductIdsJSON]
+                'associated_product_ids' => $associatedProductIds,
             ]
         );
 
         $this->dispatch('backend/catalog/product/save');
 
-        /** @var $objectManager ObjectManager */
+        /** @var $objectManager \Magento\TestFramework\ObjectManager */
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var $product Product */
-        $product = $objectManager->get(Registry::class)->registry('current_product');
-
-        self::assertEquals($associatedProductIds, $product->getExtensionAttributes()->getConfigurableProductLinks());
+        /** @var $product \Magento\Catalog\Model\Product */
+        $product = $objectManager->get('Magento\Framework\Registry')->registry('current_product');
+        $this->assertEquals($associatedProductIds, $product->getAssociatedProductIds());
     }
 
     /**

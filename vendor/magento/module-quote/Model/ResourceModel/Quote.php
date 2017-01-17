@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 
@@ -64,9 +64,7 @@ class Quote extends AbstractDb
         $select = parent::_getLoadSelect($field, $value, $object);
         $storeIds = $object->getSharedStoreIds();
         if ($storeIds) {
-            if ($storeIds != ['*']) {
-                $select->where('store_id IN (?)', $storeIds);
-            }
+            $select->where('store_id IN (?)', $storeIds);
         } else {
             /**
              * For empty result

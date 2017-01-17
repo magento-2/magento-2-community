@@ -2,7 +2,7 @@
 /**
  * Catalog super product configurable part block
  *
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\ConfigurableProduct\Block\Product\View\Type;
@@ -124,16 +124,19 @@ class Configurable extends \Magento\Catalog\Block\Product\View\AbstractView
     /**
      * Get Allowed Products
      *
-     * @return \Magento\Catalog\Model\Product[]
+     * @return array
      */
     public function getAllowProducts()
     {
         if (!$this->hasAllowProducts()) {
+            $products = [];
             $skipSaleableCheck = $this->catalogProduct->getSkipSaleableCheck();
-
-            $products = $skipSaleableCheck ?
-                $this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct(), null) :
-                $this->getProduct()->getTypeInstance()->getSalableUsedProducts($this->getProduct(), null);
+            $allProducts = $this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct(), null);
+            foreach ($allProducts as $product) {
+                if ($product->isSaleable() || $skipSaleableCheck) {
+                    $products[] = $product;
+                }
+            }
             $this->setAllowProducts($products);
         }
         return $this->getData('allow_products');

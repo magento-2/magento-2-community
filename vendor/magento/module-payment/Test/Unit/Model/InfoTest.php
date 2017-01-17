@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 
@@ -34,28 +34,22 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->contextMock = $this->getMock(\Magento\Framework\Model\Context::class, [], [], '', false);
-        $this->registryMock = $this->getMock(\Magento\Framework\Registry::class);
-        $this->paymentHelperMock = $this->getMock(
-            \Magento\Payment\Helper\Data::class,
-            ['getMethodInstance'],
-            [],
-            '',
-            false
-        );
+        $this->contextMock = $this->getMock('Magento\Framework\Model\Context', [], [], '', false);
+        $this->registryMock = $this->getMock('Magento\Framework\Registry');
+        $this->paymentHelperMock = $this->getMock('Magento\Payment\Helper\Data', ['getMethodInstance'], [], '', false);
         $this->encryptorInterfaceMock = $this->getMock(
-            \Magento\Framework\Encryption\EncryptorInterface::class,
+            'Magento\Framework\Encryption\EncryptorInterface',
             [],
             [],
             '',
             false
         );
-        $this->methodInstanceMock = $this->getMockBuilder(\Magento\Payment\Model\MethodInterface::class)
+        $this->methodInstanceMock = $this->getMockBuilder('Magento\Payment\Model\MethodInterface')
             ->getMockForAbstractClass();
 
         $this->objectManagerHelper = new ObjectManagerHelper($this);
         $this->info = $this->objectManagerHelper->getObject(
-            \Magento\Payment\Model\Info::class,
+            'Magento\Payment\Model\Info',
             [
                 'context' => $this->contextMock,
                 'registry' => $this->registryMock,
@@ -96,6 +90,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+
     public function testGetMethodInstanceWithRealMethod()
     {
         $method = 'real_method';
@@ -112,6 +107,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
         $this->info->getMethodInstance();
     }
+
 
     public function testGetMethodInstanceWithUnrealMethod()
     {
@@ -135,6 +131,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
         $this->info->getMethodInstance();
     }
 
+
     /**
      * @expectedException \Magento\Framework\Exception\LocalizedException
      * @expectedExceptionMessage The payment method you requested is not available.
@@ -144,6 +141,7 @@ class InfoTest extends \PHPUnit_Framework_TestCase
         $this->info->setData('method', false);
         $this->info->getMethodInstance();
     }
+
 
     public function testGetMethodInstanceRequestedMethod()
     {
@@ -253,9 +251,9 @@ class InfoTest extends \PHPUnit_Framework_TestCase
 
     public function testInitAdditionalInformationWithUnserialize()
     {
-        $data = ['key1' => 'data1', 'key2' => 'data2'];
+        $data = serialize(['key1' => 'data1', 'key2' => 'data2']);
         $this->info->setData('additional_information', $data);
 
-        $this->assertEquals($data, $this->info->getAdditionalInformation());
+        $this->assertEquals(unserialize($data), $this->info->getAdditionalInformation());
     }
 }

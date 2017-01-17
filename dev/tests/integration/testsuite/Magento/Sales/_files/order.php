@@ -1,10 +1,8 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
-
-use Magento\Sales\Model\Order\Payment;
 
 // @codingStandardsIgnoreFile
 
@@ -22,15 +20,8 @@ $billingAddress->setAddressType('billing');
 $shippingAddress = clone $billingAddress;
 $shippingAddress->setId(null)->setAddressType('shipping');
 
-/** @var Payment $payment */
-$payment = $objectManager->create(Payment::class);
-$payment->setMethod('checkmo')
-    ->setAdditionalInformation([
-        'token_metadata' => [
-            'token' => 'f34vjw',
-            'customer_id' => 1
-        ]
-    ]);
+$payment = $objectManager->create('Magento\Sales\Model\Order\Payment');
+$payment->setMethod('checkmo');
 
 /** @var \Magento\Sales\Model\Order\Item $orderItem */
 $orderItem = $objectManager->create('Magento\Sales\Model\Order\Item');
@@ -49,8 +40,6 @@ $order->setIncrementId(
 )->setStatus(
     $order->getConfig()->getStateDefaultStatus(\Magento\Sales\Model\Order::STATE_PROCESSING)
 )->setSubtotal(
-    100
-)->setGrandTotal(
     100
 )->setBaseSubtotal(
     100

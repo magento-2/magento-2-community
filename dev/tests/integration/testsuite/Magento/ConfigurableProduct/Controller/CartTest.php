@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2016 Magento. All rights reserved.
+ * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
 
@@ -8,9 +8,6 @@
  * Test class for \Magento\Checkout\Controller\Cart
  */
 namespace Magento\ConfigurableProduct\Controller;
-
-use Magento\TestFramework\Helper\Bootstrap;
-use Magento\Catalog\Api\ProductRepositoryInterface;
 
 class CartTest extends \Magento\TestFramework\TestCase\AbstractController
 {
@@ -24,10 +21,7 @@ class CartTest extends \Magento\TestFramework\TestCase\AbstractController
         /** @var $session \Magento\Checkout\Model\Session  */
         $session = $this->_objectManager->create('Magento\Checkout\Model\Session');
 
-        $productRepository = Bootstrap::getObjectManager()->create(ProductRepositoryInterface::class);
-        $product = $productRepository->get('configurable');
-
-        $quoteItem = $this->_getQuoteItemIdByProductId($session->getQuote(), $product->getId());
+        $quoteItem = $this->_getQuoteItemIdByProductId($session->getQuote(), 1);
         $this->assertNotNull($quoteItem, 'Cannot get quote item for configurable product');
 
         $this->dispatch(

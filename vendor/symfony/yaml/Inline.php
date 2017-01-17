@@ -28,7 +28,7 @@ class Inline
     private static $objectForMap = false;
 
     /**
-     * Converts a YAML string to a PHP value.
+     * Converts a YAML string to a PHP array.
      *
      * @param string $value                  A YAML string
      * @param bool   $exceptionOnInvalidType true if an exception must be thrown on invalid types (a PHP resource or object), false otherwise
@@ -36,7 +36,7 @@ class Inline
      * @param bool   $objectForMap           true if maps should return a stdClass instead of array()
      * @param array  $references             Mapping of variable names to values
      *
-     * @return mixed A PHP value
+     * @return array A PHP array representing the YAML string
      *
      * @throws ParseException
      */
@@ -90,7 +90,7 @@ class Inline
      * @param bool  $exceptionOnInvalidType true if an exception must be thrown on invalid types (a PHP resource or object), false otherwise
      * @param bool  $objectSupport          true if object support is enabled, false otherwise
      *
-     * @return string The YAML string representing the PHP value
+     * @return string The YAML string representing the PHP array
      *
      * @throws DumpException When trying to dump PHP resource
      */
@@ -105,7 +105,7 @@ class Inline
                 return 'null';
             case is_object($value):
                 if ($objectSupport) {
-                    return '!php/object:'.serialize($value);
+                    return '!!php/object:'.serialize($value);
                 }
 
                 if ($exceptionOnInvalidType) {
@@ -158,28 +158,6 @@ class Inline
     }
 
     /**
-     * Check if given array is hash or just normal indexed array.
-     *
-     * @internal
-     *
-     * @param array $value The PHP array to check
-     *
-     * @return bool true if value is hash array, false otherwise
-     */
-    public static function isHash(array $value)
-    {
-        $expectedKey = 0;
-
-        foreach ($value as $key => $val) {
-            if ($key !== $expectedKey++) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Dumps a PHP array to a YAML string.
      *
      * @param array $value                  The PHP array to dump
@@ -191,7 +169,11 @@ class Inline
     private static function dumpArray($value, $exceptionOnInvalidType, $objectSupport)
     {
         // array
-        if ($value && !self::isHash($value)) {
+        $keys = array_keys($value);
+        $keysCount = count($keys);
+        if ((1 === $keysCount && '0' == $keys[0])
+            || ($keysCount > 1 && array_reduce($keys, function ($v, $w) { return (int) $v + $w; }, 0) === $keysCount * ($keysCount - 1) / 2)
+        ) {
             $output = array();
             foreach ($value as $val) {
                 $output[] = self::dump($val, $exceptionOnInvalidType, $objectSupport);
@@ -200,7 +182,7 @@ class Inline
             return sprintf('[%s]', implode(', ', $output));
         }
 
-        // hash
+        // mapping
         $output = array();
         foreach ($value as $key => $val) {
             $output[] = sprintf('%s: %s', self::dump($key, $exceptionOnInvalidType, $objectSupport), self::dump($val, $exceptionOnInvalidType, $objectSupport));
@@ -210,7 +192,7 @@ class Inline
     }
 
     /**
-     * Parses a YAML scalar.
+     * Parses a scalar to a YAML string.
      *
      * @param string $scalar
      * @param string $delimiters
@@ -219,7 +201,7 @@ class Inline
      * @param bool   $evaluate
      * @param array  $references
      *
-     * @return string
+     * @return string A YAML string
      *
      * @throws ParseException When malformed inline YAML string is parsed
      *
@@ -251,7 +233,7 @@ class Inline
                 $output = $match[1];
                 $i += strlen($output);
             } else {
-                throw new ParseException(sprintf('Malformed inline YAML string: %s.', $scalar));
+                throw new ParseException(sprintf('Malformed inline YAML string (%s).', $scalar));
             }
 
             // a non-quoted string cannot start with @ or ` (reserved) nor with a scalar indicator (| or >)
@@ -271,19 +253,19 @@ class Inline
     }
 
     /**
-     * Parses a YAML quoted scalar.
+     * Parses a quoted scalar to YAML.
      *
      * @param string $scalar
      * @param int    &$i
      *
-     * @return string
+     * @return string A YAML string
      *
      * @throws ParseException When malformed inline YAML string is parsed
      */
     private static function parseQuotedScalar($scalar, &$i)
     {
         if (!preg_match('/'.self::REGEX_QUOTED_STRING.'/Au', substr($scalar, $i), $match)) {
-            throw new ParseException(sprintf('Malformed inline YAML string: %s.', substr($scalar, $i)));
+            throw new ParseException(sprintf('Malformed inline YAML string (%s).', substr($scalar, $i)));
         }
 
         $output = substr($match[0], 1, strlen($match[0]) - 2);
@@ -301,13 +283,13 @@ class Inline
     }
 
     /**
-     * Parses a YAML sequence.
+     * Parses a sequence to a YAML string.
      *
      * @param string $sequence
      * @param int    &$i
      * @param array  $references
      *
-     * @return array
+     * @return string A YAML string
      *
      * @throws ParseException When malformed inline YAML string is parsed
      */
@@ -356,17 +338,17 @@ class Inline
             ++$i;
         }
 
-        throw new ParseException(sprintf('Malformed inline YAML string: %s.', $sequence));
+        throw new ParseException(sprintf('Malformed inline YAML string %s', $sequence));
     }
 
     /**
-     * Parses a YAML mapping.
+     * Parses a mapping to a YAML string.
      *
      * @param string $mapping
      * @param int    &$i
      * @param array  $references
      *
-     * @return array|\stdClass
+     * @return string A YAML string
      *
      * @throws ParseException When malformed inline YAML string is parsed
      */
@@ -444,7 +426,7 @@ class Inline
             }
         }
 
-        throw new ParseException(sprintf('Malformed inline YAML string: %s.', $mapping));
+        throw new ParseException(sprintf('Malformed inline YAML string %s', $mapping));
     }
 
     /**
@@ -497,16 +479,6 @@ class Inline
                         return (string) substr($scalar, 5);
                     case 0 === strpos($scalar, '! '):
                         return (int) self::parseScalar(substr($scalar, 2));
-                    case 0 === strpos($scalar, '!php/object:'):
-                        if (self::$objectSupport) {
-                            return unserialize(substr($scalar, 12));
-                        }
-
-                        if (self::$exceptionOnInvalidType) {
-                            throw new ParseException('Object support when parsing a YAML file has been disabled.');
-                        }
-
-                        return;
                     case 0 === strpos($scalar, '!!php/object:'):
                         if (self::$objectSupport) {
                             return unserialize(substr($scalar, 13));
@@ -540,12 +512,7 @@ class Inline
                     case preg_match('/^(-|\+)?[0-9,]+(\.[0-9]+)?$/', $scalar):
                         return (float) str_replace(',', '', $scalar);
                     case preg_match(self::getTimestampRegex(), $scalar):
-                        $timeZone = date_default_timezone_get();
-                        date_default_timezone_set('UTC');
-                        $time = strtotime($scalar);
-                        date_default_timezone_set($timeZone);
-
-                        return $time;
+                        return strtotime($scalar);
                 }
             default:
                 return (string) $scalar;
