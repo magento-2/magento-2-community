@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
+class ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505
 {
     public static $files = array (
         '07ec02c7e667fdcb3e30c02cc772b743' => __DIR__ . '/..' . '/magento/framework/registration.php',
@@ -182,6 +182,7 @@ class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
         array (
             'Psr\\Log\\' => 8,
             'Pelago\\' => 7,
+            'PDepend\\' => 8,
         ),
         'M' => 
         array (
@@ -495,6 +496,10 @@ class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
         'Pelago\\' => 
         array (
             0 => __DIR__ . '/..' . '/pelago/emogrifier/Classes',
+        ),
+        'PDepend\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/pdepend/pdepend/src/main/php/PDepend',
         ),
         'Monolog\\' => 
         array (
@@ -999,10 +1004,6 @@ class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
             'PHPMD\\' => 
             array (
                 0 => __DIR__ . '/..' . '/phpmd/phpmd/src/main/php',
-            ),
-            'PDepend\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/pdepend/pdepend/src/main/php',
             ),
         ),
         'O' => 
@@ -1521,6 +1522,7 @@ class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
         'PHP_Token_NEW' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NS_C' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NS_SEPARATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'PHP_Token_NULLSAFE_OBJECT_OPERATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NUM_STRING' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_OBJECT_CAST' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_OBJECT_OPERATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
@@ -1773,11 +1775,11 @@ class ComposerStaticInitf4386a435c9f0af056695f7999d4c05d
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf4386a435c9f0af056695f7999d4c05d::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf4386a435c9f0af056695f7999d4c05d::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf4386a435c9f0af056695f7999d4c05d::$prefixesPsr0;
-            $loader->fallbackDirsPsr0 = ComposerStaticInitf4386a435c9f0af056695f7999d4c05d::$fallbackDirsPsr0;
-            $loader->classMap = ComposerStaticInitf4386a435c9f0af056695f7999d4c05d::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit5ba3f69c1f7e17c28be7126ae9ebd505::$classMap;
 
         }, null, ClassLoader::class);
     }
