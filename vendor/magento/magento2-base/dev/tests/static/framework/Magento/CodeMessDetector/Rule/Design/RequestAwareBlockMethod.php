@@ -4,6 +4,8 @@
  * See COPYING.txt for license details.
  */
 
+declare(strict_types=1);
+
 namespace Magento\CodeMessDetector\Rule\Design;
 
 use PHPMD\AbstractNode;
@@ -19,7 +21,7 @@ use PHPMD\Rule\MethodAware;
 class RequestAwareBlockMethod extends AbstractRule implements MethodAware
 {
     /**
-     * @inheritdoc
+     * @inheritDoc
      *
      * @param ASTMethod|MethodNode $method
      */

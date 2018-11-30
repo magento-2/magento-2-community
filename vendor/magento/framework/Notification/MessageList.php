@@ -10,6 +10,7 @@ namespace Magento\Framework\Notification;
  * Class for processing the list of system messages
  *
  * Class MessageList
+ * @api
  */
 class MessageList
 {
@@ -71,7 +72,7 @@ class MessageList
     public function getMessageByIdentity($identity)
     {
         $this->_loadMessages();
-        return isset($this->_messages[$identity]) ? $this->_messages[$identity] : null;
+        return $this->_messages[$identity] ?? null;
     }
 
     /**

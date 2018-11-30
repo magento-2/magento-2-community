@@ -16,25 +16,17 @@ use Magento\Backend\Test\Page\Adminhtml\Dashboard;
 class AssertHttpsUsedOnBackend extends AbstractConstraint
 {
     /**
-     * Secured protocol format.
-     *
-     * @var string
+     * Protocols
      */
-    private $securedProtocol = \Magento\Framework\HTTP\PhpEnvironment\Request::SCHEME_HTTPS;
-
-    /**
-     * Unsecured protocol format.
-     *
-     * @var string
-     */
-    private $unsecuredProtocol = \Magento\Framework\HTTP\PhpEnvironment\Request::SCHEME_HTTP;
+    const SCHEME_HTTP  = 'http';
+    const SCHEME_HTTPS = 'https';
 
     /**
      * Browser interface.
      *
      * @var BrowserInterface
      */
-    private $browser;
+    protected $browser;
 
     /**
      * Validations execution.
@@ -50,7 +42,7 @@ class AssertHttpsUsedOnBackend extends AbstractConstraint
 
         // Open specified Admin page using Navigation Menu to assert that JS is deployed validly as a part of statics.
         $adminDashboardPage->open()->getMenuBlock()->navigate($navMenuPath);
-        $this->assertUsedProtocol($this->securedProtocol);
+        $this->assertUsedProtocol(self::SCHEME_HTTPS);
         $this->assertDirectHttpUnavailable();
     }
 
@@ -60,7 +52,7 @@ class AssertHttpsUsedOnBackend extends AbstractConstraint
      * @param string $expectedProtocol
      * @return void
      */
-    private function assertUsedProtocol($expectedProtocol)
+    protected function assertUsedProtocol($expectedProtocol)
     {
         if (substr($expectedProtocol, -3) !== "://") {
             $expectedProtocol .= '://';
@@ -78,12 +70,12 @@ class AssertHttpsUsedOnBackend extends AbstractConstraint
      *
      * @return void
      */
-    private function assertDirectHttpUnavailable()
+    protected function assertDirectHttpUnavailable()
     {
-        $fakeUrl = str_replace($this->securedProtocol, $this->unsecuredProtocol, $this->browser->getUrl());
+        $fakeUrl = str_replace(self::SCHEME_HTTPS, self::SCHEME_HTTP, $this->browser->getUrl());
         $this->browser->open($fakeUrl);
         \PHPUnit_Framework_Assert::assertStringStartsWith(
-            $this->securedProtocol,
+            self::SCHEME_HTTPS,
             $this->browser->getUrl(),
             'Merchant is not redirected to https if tries to access the Admin panel page directly via http.'
         );

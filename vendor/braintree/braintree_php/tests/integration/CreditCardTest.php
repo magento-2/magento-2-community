@@ -221,11 +221,14 @@ class CreditCardTest extends Setup
             'customerId' => $customer->id,
             'number' => '4111111111111111',
             'expirationDate' => '05/2011',
-            'options' => ['verifyCard' => true]
+            'options' => ['verifyCard' => true],
+            'deviceSessionId' => 'abc123'
         ]);
         $this->assertTrue($result->success);
         $this->assertNotNull($result->creditCard->verification->riskData);
         $this->assertNotNull($result->creditCard->verification->riskData->decision);
+        $this->assertNull($result->creditCard->verification->riskData->deviceDataCaptured);
+        $this->assertNull($result->creditCard->verification->riskData->id);
     }
 
     public function testCreate_withCardVerificationAndOverriddenAmount()
@@ -239,6 +242,8 @@ class CreditCardTest extends Setup
         ]);
         $this->assertFalse($result->success);
         $this->assertEquals(Braintree\Result\CreditCardVerification::PROCESSOR_DECLINED, $result->creditCardVerification->status);
+        $this->assertEquals('1.02', $result->creditCardVerification->amount);
+        $this->assertEquals('USD', $result->creditCardVerification->currencyIsoCode);
         $this->assertEquals('2000', $result->creditCardVerification->processorResponseCode);
         $this->assertEquals('Do Not Honor', $result->creditCardVerification->processorResponseText);
         $this->assertEquals('I', $result->creditCardVerification->cvvResponseCode);

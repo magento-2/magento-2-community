@@ -7,7 +7,6 @@ namespace Braintree;
  *
  * @package    Braintree
  * @subpackage Utility
- * @copyright  2015 Braintree, a division of PayPal, Inc.
  */
 
 class Configuration
@@ -131,7 +130,7 @@ class Configuration
 
     /**
      * Sets or gets the SSL version to use for making requests. See
-     * http://php.net/manual/en/function.curl-setopt.php for possible
+     * https://php.net/manual/en/function.curl-setopt.php for possible
      * CURLOPT_SSLVERSION values.
      *
      * @param integer $value If provided, sets the SSL version

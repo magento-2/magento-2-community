@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Magento\Newsletter\Test\Unit\Model;
 
@@ -16,7 +17,7 @@ use Magento\Newsletter\Model\ResourceModel\Problem as ProblemResource;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Newsletter\Model\SubscriberFactory;
 
-class ProblemTest extends \PHPUnit_Framework_TestCase
+class ProblemTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var Context|\PHPUnit_Framework_MockObject_MockObject

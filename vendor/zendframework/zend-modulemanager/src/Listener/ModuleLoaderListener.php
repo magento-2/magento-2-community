@@ -20,7 +20,7 @@ use Zend\ModuleManager\ModuleEvent;
 class ModuleLoaderListener extends AbstractListener implements ListenerAggregateInterface
 {
     /**
-     * @var array
+     * @var ModuleAutoloader
      */
     protected $moduleLoader;
 
@@ -58,7 +58,7 @@ class ModuleLoaderListener extends AbstractListener implements ListenerAggregate
     /**
      * {@inheritDoc}
      */
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
         $this->callbacks[] = $events->attach(
             ModuleEvent::EVENT_LOAD_MODULES,
@@ -91,8 +91,7 @@ class ModuleLoaderListener extends AbstractListener implements ListenerAggregate
      */
     protected function hasCachedClassMap()
     {
-        if (
-            $this->options->getModuleMapCacheEnabled()
+        if ($this->options->getModuleMapCacheEnabled()
             && file_exists($this->options->getModuleMapCacheFile())
         ) {
             return true;

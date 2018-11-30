@@ -8,16 +8,13 @@ namespace Magento\Review\Controller\Product;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Review\Controller\Product as ProductController;
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\View\Result\Layout;
 
 class ListAjax extends ProductController
 {
     /**
      * Show list of product's reviews
      *
-     * @return ResponseInterface|ResultInterface|Layout
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|\Magento\Framework\View\Result\Layout
      */
     public function execute()
     {

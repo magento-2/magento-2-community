@@ -34,8 +34,8 @@ class PathValidator implements PathValidatorInterface
      * @inheritdoc
      */
     public function validate(
-        $directoryPath,
-        $path,
+        string $directoryPath,
+        string $path,
         $scheme = null,
         $absolutePath = false
     ) {

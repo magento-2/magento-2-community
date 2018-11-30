@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Magento\Sales\Test\Unit\Model;
 
@@ -19,7 +20,7 @@ use Magento\Sales\Model\ValidatorResultInterfaceFactory;
 /**
  * @covers \Magento\Sales\Model\Validator
  */
-class ValidatorTest extends \PHPUnit_Framework_TestCase
+class ValidatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Testable Object
@@ -67,16 +68,12 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
      */
     protected function setUp()
     {
-        $this->objectManagerMock = $this->getMockBuilder(ObjectManagerInterface::class)
-            ->disableOriginalConstructor()->getMock();
-        $this->entityMock = $this->getMockBuilder(OrderInterface::class)
-            ->disableOriginalConstructor()->getMock();
-        $this->validatorMock = $this->getMockBuilder(ValidatorInterface::class)
-            ->disableOriginalConstructor()->getMock();
+        $this->objectManagerMock = $this->createMock(ObjectManagerInterface::class);
+        $this->entityMock = $this->createMock(OrderInterface::class);
+        $this->validatorMock = $this->createMock(ValidatorInterface::class);
         $this->validatorResultFactoryMock = $this->getMockBuilder(ValidatorResultInterfaceFactory::class)
             ->setMethods(['create'])->disableOriginalConstructor()->getMock();
-        $this->validatorResultMock = $this->getMockBuilder(ValidatorResultInterface::class)
-            ->disableOriginalConstructor()->getMock();
+        $this->validatorResultMock = $this->createMock(ValidatorResultInterface::class);
         $this->validatorResultFactoryMock->expects($this->any())->method('create')
             ->willReturn($this->validatorResultMock);
         $this->objectManager = new ObjectManager($this);
@@ -129,7 +126,7 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         $validators = [$validatorName];
         $this->objectManagerMock->expects($this->once())->method('create')->willReturn(null);
         $this->validatorResultMock->expects($this->never())->method('addMessage');
-        $this->setExpectedException(ConfigurationMismatchException::class);
+        $this->expectException(ConfigurationMismatchException::class);
         $this->validator->validate($this->entityMock, $validators);
     }
 }

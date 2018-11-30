@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 \Magento\TestFramework\Helper\Bootstrap::getInstance()->reinitialize();
 
 /** @var \Magento\TestFramework\ObjectManager $objectManager */
@@ -50,7 +51,7 @@ $oldOptions = [
             [
                 'option_type_id' => null,
                 'title' => 'Option 1',
-                'price' => '3,000.00',
+                'price' => '-3,000.00',
                 'price_type' => 'fixed',
                 'sku' => '3-1-select',
             ],
@@ -85,7 +86,18 @@ $oldOptions = [
                 'sku' => '4-2-radio',
             ],
         ]
-    ]
+    ],
+    [
+        'previous_group' => 'text',
+        'title'     => 'Test Field',
+        'type'      => 'field',
+        'is_require' => 1,
+        'sort_order' => 0,
+        'price'     => 1,
+        'price_type' => 'fixed',
+        'sku'       => '1-text',
+        'max_characters' => 100,
+    ],
 ];
 
 $options = [];

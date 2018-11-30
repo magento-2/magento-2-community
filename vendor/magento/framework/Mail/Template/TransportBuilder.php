@@ -9,11 +9,15 @@
 namespace Magento\Framework\Mail\Template;
 
 use Magento\Framework\App\TemplateTypesInterface;
-use Magento\Framework\Mail\Message;
 use Magento\Framework\Mail\MessageInterface;
+use Magento\Framework\Mail\MessageInterfaceFactory;
+use Magento\Framework\Mail\TransportInterface;
 use Magento\Framework\Mail\TransportInterfaceFactory;
 use Magento\Framework\ObjectManagerInterface;
 
+/**
+ * @api
+ */
 class TransportBuilder
 {
     /**
@@ -47,7 +51,7 @@ class TransportBuilder
     /**
      * Mail Transport
      *
-     * @var \Magento\Framework\Mail\TransportInterface
+     * @var TransportInterface
      */
     protected $transport;
 
@@ -61,33 +65,33 @@ class TransportBuilder
     /**
      * Object Manager
      *
-     * @var \Magento\Framework\ObjectManagerInterface
+     * @var ObjectManagerInterface
      */
     protected $objectManager;
 
     /**
      * Message
      *
-     * @var \Magento\Framework\Mail\Message
+     * @var MessageInterface
      */
     protected $message;
 
     /**
      * Sender resolver
      *
-     * @var \Magento\Framework\Mail\Template\SenderResolverInterface
+     * @var SenderResolverInterface
      */
     protected $_senderResolver;
 
     /**
-     * @var \Magento\Framework\Mail\TransportInterfaceFactory
+     * @var TransportInterfaceFactory
      */
     protected $mailTransportFactory;
 
-    /** 
-     * @var int|null
+    /**
+     * @var MessageInterfaceFactory
      */
-    private $scopeId;
+    private $messageFactory;
 
     /**
      * @param FactoryInterface $templateFactory
@@ -95,23 +99,28 @@ class TransportBuilder
      * @param SenderResolverInterface $senderResolver
      * @param ObjectManagerInterface $objectManager
      * @param TransportInterfaceFactory $mailTransportFactory
+     * @param MessageInterfaceFactory|null $messageFactory
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function __construct(
         FactoryInterface $templateFactory,
         MessageInterface $message,
         SenderResolverInterface $senderResolver,
         ObjectManagerInterface $objectManager,
-        TransportInterfaceFactory $mailTransportFactory
+        TransportInterfaceFactory $mailTransportFactory,
+        MessageInterfaceFactory $messageFactory = null
     ) {
         $this->templateFactory = $templateFactory;
-        $this->message = $message;
         $this->objectManager = $objectManager;
         $this->_senderResolver = $senderResolver;
         $this->mailTransportFactory = $mailTransportFactory;
+        $this->messageFactory = $messageFactory ?: $this->objectManager->get(MessageInterfaceFactory::class);
+        $this->message = $this->messageFactory->create();
     }
 
     /**
-     * Add cc address.
+     * Add cc address
      *
      * @param array|string $address
      * @param string $name
@@ -124,7 +133,7 @@ class TransportBuilder
     }
 
     /**
-     * Add to address.
+     * Add to address
      *
      * @param array|string $address
      * @param string $name
@@ -137,7 +146,7 @@ class TransportBuilder
     }
 
     /**
-     * Add bcc address.
+     * Add bcc address
      *
      * @param array|string $address
      * @return $this
@@ -149,7 +158,7 @@ class TransportBuilder
     }
 
     /**
-     * Set Reply-To Header.
+     * Set Reply-To Header
      *
      * @param string $email
      * @param string|null $name
@@ -162,34 +171,20 @@ class TransportBuilder
     }
 
     /**
-     * Set scope.
-     *
-     * @param int $scopeId
-     * @return $this
-     */
-    public function setScopeId($scopeId)
-    {
-        $this->scopeId = $scopeId;
-
-        return $this;
-    }
-
-    /**
-     * Set mail from address.
+     * Set mail from address
      *
      * @param string|array $from
      * @return $this
      */
     public function setFrom($from)
     {
-        $result = $this->_senderResolver->resolve($from, $this->scopeId);
+        $result = $this->_senderResolver->resolve($from);
         $this->message->setFrom($result['email'], $result['name']);
-
         return $this;
     }
 
     /**
-     * Set template identifier.
+     * Set template identifier
      *
      * @param string $templateIdentifier
      * @return $this
@@ -201,7 +196,7 @@ class TransportBuilder
     }
 
     /**
-     * Set template model.
+     * Set template model
      *
      * @param string $templateModel
      * @return $this
@@ -213,7 +208,7 @@ class TransportBuilder
     }
 
     /**
-     * Set template vars.
+     * Set template vars
      *
      * @param array $templateVars
      * @return $this
@@ -225,7 +220,7 @@ class TransportBuilder
     }
 
     /**
-     * Set template options.
+     * Set template options
      *
      * @param array $templateOptions
      * @return $this
@@ -237,9 +232,9 @@ class TransportBuilder
     }
 
     /**
-     * Get mail transport.
+     * Get mail transport
      *
-     * @return \Magento\Framework\Mail\TransportInterface
+     * @return TransportInterface
      */
     public function getTransport()
     {
@@ -251,23 +246,21 @@ class TransportBuilder
     }
 
     /**
-     * Reset object state.
+     * Reset object state
      *
      * @return $this
      */
     protected function reset()
     {
-        $this->message = $this->objectManager->create(Message::class);
+        $this->message = $this->messageFactory->create();
         $this->templateIdentifier = null;
         $this->templateVars = null;
         $this->templateOptions = null;
-        $this->scopeId = null;
-
         return $this;
     }
 
     /**
-     * Get template.
+     * Get template
      *
      * @return \Magento\Framework\Mail\TemplateInterface
      */
@@ -279,7 +272,7 @@ class TransportBuilder
     }
 
     /**
-     * Prepare message.
+     * Prepare message
      *
      * @return $this
      */

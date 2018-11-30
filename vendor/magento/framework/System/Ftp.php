@@ -6,8 +6,6 @@
 
 namespace Magento\Framework\System;
 
-use Magento\Framework\Filesystem\DriverInterface;
-
 /**
  * Class to work with remote FTP server
  */
@@ -58,7 +56,8 @@ class Ftp
         $dir = explode("/", $path);
         $path = "";
         $ret = true;
-        for ($i = 0; $i < count($dir); $i++) {
+        $dirCount = count($dir);
+        for ($i = 0; $i < $dirCount; $i++) {
             $path .= "/" . $dir[$i];
             if (!@ftp_chdir($this->_conn, $path)) {
                 @ftp_chdir($this->_conn, "/");
@@ -109,7 +108,7 @@ class Ftp
         }
         
         // Decode user & password strings from URL
-        foreach (array_intersect(array_keys($data), ['user', 'pass']) as $key) {
+        foreach (array_intersect(array_keys($data), ['user','pass']) as $key) {
             $data[$key] = urldecode($data[$key]);
         }
         

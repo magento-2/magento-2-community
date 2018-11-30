@@ -9,6 +9,7 @@ use Magento\Catalog\Controller\Adminhtml\Product\Attribute\Validate;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute;
 use Magento\Catalog\Test\Unit\Controller\Adminhtml\Product\AttributeTest;
 use Magento\Eav\Model\Entity\Attribute\Set as AttributeSet;
+use Magento\Framework\Serialize\Serializer\FormData;
 use Magento\Framework\Controller\Result\Json as ResultJson;
 use Magento\Framework\Controller\Result\JsonFactory as ResultJsonFactory;
 use Magento\Framework\Escaper;
@@ -61,6 +62,11 @@ class ValidateTest extends AttributeTest
      */
     protected $layoutMock;
 
+    /**
+     * @var FormData|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $formDataSerializer;
+
     protected function setUp()
     {
         parent::setUp();
@@ -86,6 +92,9 @@ class ValidateTest extends AttributeTest
             ->getMock();
         $this->layoutMock = $this->getMockBuilder(LayoutInterface::class)
             ->getMockForAbstractClass();
+        $this->formDataSerializer = $this->getMockBuilder(FormData::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->contextMock->expects($this->any())
             ->method('getObjectManager')
@@ -106,19 +115,22 @@ class ValidateTest extends AttributeTest
                 'resultPageFactory' => $this->resultPageFactoryMock,
                 'resultJsonFactory' => $this->resultJsonFactoryMock,
                 'layoutFactory' => $this->layoutFactoryMock,
-                'multipleAttributeList' => ['select' => 'option']
+                'multipleAttributeList' => ['select' => 'option'],
+                'formDataSerializer' => $this->formDataSerializer,
             ]
         );
     }
 
     public function testExecute()
     {
+        $serializedOptions = '{"key":"value"}';
         $this->requestMock->expects($this->any())
             ->method('getParam')
             ->willReturnMap([
                 ['frontend_label', null, 'test_frontend_label'],
                 ['attribute_code', null, 'test_attribute_code'],
                 ['new_attribute_set_name', null, 'test_attribute_set_name'],
+                ['serialized_options', '[]', $serializedOptions],
             ]);
         $this->objectManagerMock->expects($this->exactly(2))
             ->method('create')
@@ -160,16 +172,22 @@ class ValidateTest extends AttributeTest
      */
     public function testUniqueValidation(array $options, $isError)
     {
+        $serializedOptions = '{"key":"value"}';
         $countFunctionCalls = ($isError) ? 6 : 5;
         $this->requestMock->expects($this->exactly($countFunctionCalls))
             ->method('getParam')
             ->willReturnMap([
                 ['frontend_label', null, null],
-                ['attribute_code', null, 'test_attribute_code'],
+                ['attribute_code', null, "test_attribute_code"],
                 ['new_attribute_set_name', null, 'test_attribute_set_name'],
-                ['option', null, $options],
-                ['message_key', null, Validate::DEFAULT_MESSAGE_KEY]
+                ['message_key', null, Validate::DEFAULT_MESSAGE_KEY],
+                ['serialized_options', '[]', $serializedOptions],
             ]);
+
+        $this->formDataSerializer->expects($this->once())
+            ->method('unserialize')
+            ->with($serializedOptions)
+            ->willReturn($options);
 
         $this->objectManagerMock->expects($this->once())
             ->method('create')
@@ -203,55 +221,250 @@ class ValidateTest extends AttributeTest
         return [
             'no values' => [
                 [
-                    'delete' => [
-                        "option_0" => "",
-                        "option_1" => "",
-                        "option_2" => "",
-                    ]
-                ], false
+                    'option' => [
+                        'delete' => [
+                            "option_0" => "",
+                            "option_1" => "",
+                            "option_2" => "",
+                        ],
+                    ],
+
+                ],
+                false,
             ],
             'valid options' => [
                 [
-                    'value' => [
-                        "option_0" => [1, 0],
-                        "option_1" => [2, 0],
-                        "option_2" => [3, 0],
+                    'option' => [
+                        'value' => [
+                            "option_0" => [1, 0],
+                            "option_1" => [2, 0],
+                            "option_2" => [3, 0],
+                        ],
+                        'delete' => [
+                            "option_0" => "",
+                            "option_1" => "",
+                            "option_2" => "",
+                        ],
                     ],
-                    'delete' => [
-                        "option_0" => "",
-                        "option_1" => "",
-                        "option_2" => "",
-                    ]
-                ], false
+                ],
+                false,
             ],
             'duplicate options' => [
                 [
-                    'value' => [
-                        "option_0" => [1, 0],
-                        "option_1" => [1, 0],
-                        "option_2" => [3, 0],
+                    'option' => [
+                        'value' => [
+                            "option_0" => [1, 0],
+                            "option_1" => [1, 0],
+                            "option_2" => [3, 0],
+                        ],
+                        'delete' => [
+                            "option_0" => "",
+                            "option_1" => "",
+                            "option_2" => "",
+                        ],
                     ],
-                    'delete' => [
-                        "option_0" => "",
-                        "option_1" => "",
-                        "option_2" => "",
-                    ]
-                ], true
+                ],
+                true,
             ],
             'duplicate and deleted' => [
                 [
-                    'value' => [
-                        "option_0" => [1, 0],
-                        "option_1" => [1, 0],
-                        "option_2" => [3, 0],
+                    'option' => [
+                        'value' => [
+                            "option_0" => [1, 0],
+                            "option_1" => [1, 0],
+                            "option_2" => [3, 0],
+                        ],
+                        'delete' => [
+                            "option_0" => "",
+                            "option_1" => "1",
+                            "option_2" => "",
+                        ],
                     ],
-                    'delete' => [
-                        "option_0" => "",
-                        "option_1" => "1",
-                        "option_2" => "",
-                    ]
-                ], false
+                ],
+                false,
+            ],
+            'empty and deleted' => [
+                [
+                    'option' => [
+                        'value' => [
+                            "option_0" => [1, 0],
+                            "option_1" => [2, 0],
+                            "option_2" => ["", ""],
+                        ],
+                        'delete' => [
+                            "option_0" => "",
+                            "option_1" => "",
+                            "option_2" => "1",
+                        ],
+                    ],
+                ],
+                false,
             ],
         ];
+    }
+
+    /**
+     * Check that empty admin scope labels will trigger error.
+     *
+     * @dataProvider provideEmptyOption
+     * @param array $options
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    public function testEmptyOption(array $options, $result)
+    {
+        $serializedOptions = '{"key":"value"}';
+        $this->requestMock->expects($this->any())
+            ->method('getParam')
+            ->willReturnMap([
+                ['frontend_label', null, null],
+                ['frontend_input', 'select', 'multipleselect'],
+                ['attribute_code', null, "test_attribute_code"],
+                ['new_attribute_set_name', null, 'test_attribute_set_name'],
+                ['message_key', Validate::DEFAULT_MESSAGE_KEY, 'message'],
+                ['serialized_options', '[]', $serializedOptions],
+            ]);
+
+        $this->formDataSerializer->expects($this->once())
+            ->method('unserialize')
+            ->with($serializedOptions)
+            ->willReturn($options);
+
+        $this->objectManagerMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->attributeMock);
+
+        $this->attributeMock->expects($this->once())
+            ->method('loadByCode')
+            ->willReturnSelf();
+
+        $this->resultJsonFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultJson);
+
+        $this->resultJson->expects($this->once())
+            ->method('setJsonData')
+            ->willReturnArgument(0);
+
+        $response = $this->getModel()->execute();
+        $responseObject = json_decode($response);
+        $this->assertEquals($responseObject, $result);
+    }
+
+    /**
+     * Dataprovider for testEmptyOption.
+     *
+     * @return array
+     */
+    public function provideEmptyOption()
+    {
+        return [
+            'empty admin scope options' => [
+                [
+                    'option' => [
+                        'value' => [
+                            "option_0" => [''],
+                        ],
+                    ],
+                ],
+                (object) [
+                    'error' => true,
+                    'message' => 'The value of Admin scope can\'t be empty.',
+                ],
+            ],
+            'not empty admin scope options' => [
+                [
+                    'option' => [
+                        'value' => [
+                            "option_0" => ['asdads'],
+                        ],
+                    ],
+                ],
+                (object) [
+                    'error' => false,
+                ],
+            ],
+            'empty admin scope options and deleted' => [
+                [
+                    'option' => [
+                        'value' => [
+                            "option_0" => [''],
+                        ],
+                        'delete' => [
+                            'option_0' => '1',
+                        ],
+                    ],
+                ],
+                (object) [
+                    'error' => false,
+                ],
+            ],
+            'empty admin scope options and not deleted' => [
+                [
+                    'option' => [
+                        'value' => [
+                            "option_0" => [''],
+                        ],
+                        'delete' => [
+                            'option_0' => '0',
+                        ],
+                    ],
+                ],
+                (object) [
+                    'error' => true,
+                    'message' => 'The value of Admin scope can\'t be empty.',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return void
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    public function testExecuteWithOptionsDataError()
+    {
+        $serializedOptions = '{"key":"value"}';
+        $message = "The attribute couldn't be validated due to an error. Verify your information and try again. "
+            . "If the error persists, please try again later.";
+        $this->requestMock->expects($this->any())
+            ->method('getParam')
+            ->willReturnMap([
+                ['frontend_label', null, 'test_frontend_label'],
+                ['attribute_code', null, 'test_attribute_code'],
+                ['new_attribute_set_name', null, 'test_attribute_set_name'],
+                ['message_key', Validate::DEFAULT_MESSAGE_KEY, 'message'],
+                ['serialized_options', '[]', $serializedOptions],
+            ]);
+
+        $this->formDataSerializer->expects($this->once())
+            ->method('unserialize')
+            ->with($serializedOptions)
+            ->willThrowException(new \InvalidArgumentException('Some exception'));
+
+        $this->objectManagerMock->expects($this->once())
+            ->method('create')
+            ->willReturnMap([
+                [\Magento\Catalog\Model\ResourceModel\Eav\Attribute::class, [], $this->attributeMock],
+                [\Magento\Eav\Model\Entity\Attribute\Set::class, [], $this->attributeSetMock]
+            ]);
+
+        $this->attributeMock->expects($this->once())
+            ->method('loadByCode')
+            ->willReturnSelf();
+        $this->attributeSetMock->expects($this->never())
+            ->method('setEntityTypeId')
+            ->willReturnSelf();
+        $this->resultJsonFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->resultJson);
+        $this->resultJson->expects($this->once())
+            ->method('setJsonData')
+            ->with(json_encode([
+                'error' => true,
+                'message' => $message,
+            ]))
+            ->willReturnSelf();
+
+        $this->getModel()->execute();
     }
 }

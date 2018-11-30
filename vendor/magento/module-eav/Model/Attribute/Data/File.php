@@ -11,7 +11,8 @@ use Magento\Framework\App\RequestInterface;
 /**
  * EAV Entity Attribute File Data Model
  *
- * @author      Magento Core Team <core@magentocommerce.com>
+ * @api
+ * @since 100.0.2
  */
 class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
 {
@@ -185,7 +186,6 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
 
         $errors = [];
         $attribute = $this->getAttribute();
-        $label = $attribute->getStoreLabel();
 
         $toDelete = !empty($value['delete']) ? true : false;
         $toUpload = !empty($value['tmp_name']) || is_string($value) && !empty($value) ? true : false;
@@ -199,6 +199,7 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
         }
 
         if ($attribute->getIsRequired() && !$toUpload) {
+            $label = __($attribute->getStoreLabel());
             $errors[] = __('"%1" is a required value.', $label);
         }
 
@@ -240,7 +241,7 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
             }
         }
 
-        $destinationFolder = $attribute->getEntity()->getEntityTypeCode();
+        $destinationFolder = $attribute->getEntityType()->getEntityTypeCode();
 
         // unlink entity file
         if ($toDelete) {

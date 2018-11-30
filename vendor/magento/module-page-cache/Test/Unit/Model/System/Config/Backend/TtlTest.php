@@ -4,6 +4,8 @@
  * See COPYING.txt for license details.
  */
 
+declare(strict_types=1);
+
 namespace Magento\PageCache\Test\Unit\Model\System\Config\Backend;
 
 use Magento\PageCache\Model\System\Config\Backend\Ttl;
@@ -11,8 +13,12 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Escaper;
 use Magento\Framework\Exception\LocalizedException;
+use PHPUnit\Framework\TestCase;
 
-class TtlTest extends \PHPUnit_Framework_TestCase
+/**
+ * Class for tesing backend model for processing Public content cache lifetime settings.
+ */
+class TtlTest extends TestCase
 {
     /**
      * @var Ttl
@@ -51,7 +57,7 @@ class TtlTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function getValidValues()
+    public function getValidValues(): array
     {
         return [
             ['3600', '3600'],
@@ -67,7 +73,7 @@ class TtlTest extends \PHPUnit_Framework_TestCase
      * @return void
      * @dataProvider getValidValues
      */
-    public function testBeforeSave($value, $expectedValue)
+    public function testBeforeSave(string $value, string $expectedValue)
     {
         $this->ttl->setValue($value);
         $this->ttl->beforeSave();
@@ -77,7 +83,7 @@ class TtlTest extends \PHPUnit_Framework_TestCase
     /**
      * @return array
      */
-    public function getInvalidValues()
+    public function getInvalidValues(): array
     {
         return [
             ['<script>alert(1)</script>'],
@@ -90,17 +96,14 @@ class TtlTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $value
      * @return void
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     * @expectedExceptionMessageRegExp /Ttl value ".+" is not valid. Please .+ only numbers equal or greater than zero./
      * @dataProvider getInvalidValues
      */
-    public function testBeforeSaveInvalid($value)
+    public function testBeforeSaveInvalid(string $value)
     {
         $this->ttl->setValue($value);
         $this->escaperMock->expects($this->any())->method('escapeHtml')->with($value)->willReturn($value);
-        $expMessage = sprintf(
-            'Ttl value "%s" is not valid. Please use only numbers equal or greater than zero.',
-            $value
-        );
-        $this->setExpectedException(LocalizedException::class, $expMessage);
         $this->ttl->beforeSave();
     }
 }

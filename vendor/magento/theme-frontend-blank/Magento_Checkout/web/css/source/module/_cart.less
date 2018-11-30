@@ -80,6 +80,10 @@
             margin-bottom: 0;
             overflow: inherit;
         }
+
+        .discount.coupon {
+            display: none;
+        }
     }
 
     //  Products table
@@ -300,7 +304,8 @@
                     text-align: center;
                     white-space: nowrap;
                     width: 33%;
-                    &:before {
+
+                    &[data-th]:before {
                         content: attr(data-th) ':';
                         display: block;
                         font-weight: @font-weight__bold;
@@ -414,9 +419,13 @@
                 }
             }
         }
+
+        .action {
+            margin-bottom: @indent__s;
+        }
     }
 
-    // Products pager
+    //  Products pager
     .cart-products-toolbar {
         .toolbar-amount {
             line-height: 30px;

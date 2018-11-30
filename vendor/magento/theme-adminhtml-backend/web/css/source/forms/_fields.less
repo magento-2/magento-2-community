@@ -59,7 +59,11 @@
 }
 
 .abs-field-no-label {
+    /**
+     *@codingStandardsIgnoreStart
+     */
     #mix-grid .return_length(@field-label-grid__column, @field-grid__columns, '+');
+    //@codingStandardsIgnoreEnd
     margin-left: @_length;
 }
 
@@ -192,13 +196,13 @@
     }
 
     .admin__field:not(.admin__field-option) > & {
+        &:extend(.abs-word-wrap all);
         font-family: @font-family__base;
         font-size: @field-label__font-size;
         font-weight: @font-weight__semibold;
         line-height: 3.2rem;
         padding: 0;
         white-space: nowrap;
-        word-wrap: break-word;
 
         &:before {
             .appearing__off();
@@ -227,7 +231,7 @@
     ._required > & {
         > span {
             &:after {
-                color: @field-label__required__color;
+                color: @validation__color;
                 content: '*';
                 display: inline-block;
                 font-size: @font-size__l;
@@ -279,7 +283,7 @@
     //  Hide group legend and show first field label instead
     legend {
         &.admin__field-label {
-            opacity: 0;
+            opacity: 1;
         }
     }
 
@@ -288,7 +292,11 @@
     //  Till that time they'll be disabled by commenting pseudo-element content property.
     &[data-config-scope] {
         &:before {
+            /**
+             *@codingStandardsIgnoreStart
+             */
             #mix-grid .return_length(@field-label-grid__column + @field-control-grid__column, @field-grid__columns);
+            //@codingStandardsIgnoreEnd
             color: @field-scope__color;
             content: attr(data-config-scope);
             display: inline-block;
@@ -485,6 +493,7 @@
 
 //  Field containing a value
 .admin__field-value {
+    display: inline-block;
     padding-top: @field-option__padding-top;
 }
 
@@ -680,11 +689,11 @@
     &:extend(.abs-field-no-label all);
     clear: both;
 
-    .action-advanced {
+    .action-additional {
         margin-top: @indent__s;
     }
 
-    .action-secondary {
+    .action-basic {
         width: 100%;
     }
 }
@@ -738,6 +747,10 @@
     .admin__field-complex-content {
         max-width: 60%;
         overflow: hidden;
+    }
+
+    .admin__field-complex-text {
+        margin-left: -@indent__s;
     }
 
     //  Field with empty table and no thead

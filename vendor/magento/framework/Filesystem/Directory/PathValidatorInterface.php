@@ -25,8 +25,8 @@ interface PathValidatorInterface
      * @return void
      */
     public function validate(
-        $directoryPath,
-        $path,
+        string $directoryPath,
+        string $path,
         $scheme = null,
         $absolutePath = false
     );

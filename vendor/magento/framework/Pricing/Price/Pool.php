@@ -8,6 +8,8 @@ namespace Magento\Framework\Pricing\Price;
 
 /**
  * Class Pool
+ *
+ * @api
  */
 class Pool implements \Iterator, \ArrayAccess
 {
@@ -139,6 +141,6 @@ class Pool implements \Iterator, \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return isset($this->prices[$offset]) ? $this->prices[$offset] : null;
+        return $this->prices[$offset] ?? null;
     }
 }

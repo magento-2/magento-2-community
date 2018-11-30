@@ -3,6 +3,7 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+declare(strict_types=1);
 
 namespace Magento\Ui\Controller\Adminhtml\Index\Renderer;
 
@@ -10,14 +11,14 @@ use Magento\TestFramework\Helper\Bootstrap;
 use Magento\Framework\AuthorizationInterface;
 
 /**
- * Test for Magento\Ui\Controller\Adminhtml\Index\Render\Handle class.
+ * Test for \Magento\Ui\Controller\Adminhtml\Index\Render\Handle.
+ *
  * @magentoAppArea adminhtml
  */
 class HandleTest extends \Magento\TestFramework\TestCase\AbstractBackendController
 {
     /**
-     * @return void
-     * @magentoDataFixture  Magento/Customer/_files/customer.php
+     * @magentoDataFixture Magento/Customer/_files/customer.php
      */
     public function testExecuteWhenUserDoesNotHavePermission()
     {
@@ -33,13 +34,11 @@ class HandleTest extends \Magento\TestFramework\TestCase\AbstractBackendControll
         $this->getRequest()->setParam('isAjax', 1);
         $this->dispatch('backend/mui/index/render_handle');
         $output = $this->getResponse()->getBody();
-
         $this->assertEmpty($output, 'The acl restriction wasn\'t applied properly');
     }
 
     /**
-     * @return void
-     * @magentoDataFixture  Magento/Customer/_files/customer.php
+     * @magentoDataFixture Magento/Customer/_files/customer.php
      */
     public function testExecuteWhenUserHasPermission()
     {
@@ -50,7 +49,6 @@ class HandleTest extends \Magento\TestFramework\TestCase\AbstractBackendControll
         $this->getRequest()->setParam('isAjax', 1);
         $this->dispatch('backend/mui/index/render_handle');
         $output = $this->getResponse()->getBody();
-
         $this->assertNotEmpty($output, 'The acl restriction wasn\'t applied properly');
     }
 }

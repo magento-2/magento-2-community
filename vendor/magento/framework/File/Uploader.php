@@ -5,7 +5,7 @@
  */
 namespace Magento\Framework\File;
 
-use Magento\Framework\Filesystem\DriverInterface;
+use Magento\Framework\Image\Adapter\UploadConfigInterface;
 
 /**
  * File upload class
@@ -13,7 +13,7 @@ use Magento\Framework\Filesystem\DriverInterface;
  * ATTENTION! This class must be used like abstract class and must added
  * validation by protected file extension list to extended class
  *
- * @author     Magento Core Team <core@magentocommerce.com>
+ * @api
  */
 class Uploader
 {
@@ -138,12 +138,16 @@ class Uploader
     const TMP_NAME_EMPTY = 666;
 
     /**
-     * Max Image Width resolution in pixels. For image resizing on client side
+     * Maximum Image Width resolution in pixels. For image resizing on client side
+     * @deprecated
+     * @see UploadConfigInterface::getMaxWidth()
      */
     const MAX_IMAGE_WIDTH = 1920;
 
     /**
-     * Max Image Height resolution in pixels. For image resizing on client side
+     * Maximum Image Height resolution in pixels. For image resizing on client side
+     * @deprecated
+     * @see UploadConfigInterface::getMaxHeight()
      */
     const MAX_IMAGE_HEIGHT = 1200;
 
@@ -206,20 +210,22 @@ class Uploader
         $this->_result = false;
         $destinationFile = $destinationFolder;
         $fileName = isset($newFileName) ? $newFileName : $this->_file['name'];
-        $fileName = self::getCorrectFileName($fileName);
+        $fileName = static::getCorrectFileName($fileName);
         if ($this->_enableFilesDispersion) {
             $fileName = $this->correctFileNameCase($fileName);
             $this->setAllowCreateFolders(true);
-            $this->_dispretionPath = self::getDispretionPath($fileName);
+            $this->_dispretionPath = static::getDispersionPath($fileName);
             $destinationFile .= $this->_dispretionPath;
             $this->_createDestinationFolder($destinationFile);
         }
 
         if ($this->_allowRenameFiles) {
-            $fileName = self::getNewFileName(self::_addDirSeparator($destinationFile) . $fileName);
+            $fileName = static::getNewFileName(
+                static::_addDirSeparator($destinationFile) . $fileName
+            );
         }
 
-        $destinationFile = self::_addDirSeparator($destinationFile) . $fileName;
+        $destinationFile = static::_addDirSeparator($destinationFile) . $fileName;
 
         try {
             $this->_result = $this->_moveFile($this->_file['tmp_name'], $destinationFile);
@@ -270,7 +276,7 @@ class Uploader
      * @param string $file
      * @return void
      *
-     * @deprecated
+     * @deprecated 100.0.8
      */
     protected function chmod($file)
     {
@@ -619,8 +625,20 @@ class Uploader
      *
      * @param string $fileName
      * @return string
+     * @deprecated
      */
     public static function getDispretionPath($fileName)
+    {
+        return self::getDispersionPath($fileName);
+    }
+
+    /**
+     * Get dispertion path
+     *
+     * @param string $fileName
+     * @return string
+     */
+    public static function getDispersionPath($fileName)
     {
         $char = 0;
         $dispertionPath = '';
