@@ -15,11 +15,7 @@ use Magento\Ui\Component\DynamicRows;
 
 /**
  * Class Websites customizes websites panel
- *
- * @api
- *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @since 101.0.0
  */
 class Websites extends AbstractModifier
 {
@@ -27,43 +23,36 @@ class Websites extends AbstractModifier
 
     /**
      * @var LocatorInterface
-     * @since 101.0.0
      */
     protected $locator;
 
     /**
      * @var \Magento\Store\Api\WebsiteRepositoryInterface
-     * @since 101.0.0
      */
     protected $websiteRepository;
 
     /**
      * @var \Magento\Store\Api\GroupRepositoryInterface
-     * @since 101.0.0
      */
     protected $groupRepository;
 
     /**
      * @var \Magento\Store\Api\StoreRepositoryInterface
-     * @since 101.0.0
      */
     protected $storeRepository;
 
     /**
      * @var array
-     * @since 101.0.0
      */
     protected $websitesOptionsList;
 
     /**
      * @var StoreManagerInterface
-     * @since 101.0.0
      */
     protected $storeManager;
 
     /**
      * @var array
-     * @since 101.0.0
      */
     protected $websitesList;
 
@@ -90,7 +79,6 @@ class Websites extends AbstractModifier
 
     /**
      * {@inheritdoc}
-     * @since 101.0.0
      */
     public function modifyData(array $data)
     {
@@ -118,7 +106,6 @@ class Websites extends AbstractModifier
 
     /**
      * {@inheritdoc}
-     * @since 101.0.0
      */
     public function modifyMeta(array $meta)
     {
@@ -135,6 +122,7 @@ class Websites extends AbstractModifier
                                     'collapsible' => true,
                                     'componentType' => Form\Fieldset::NAME,
                                     'dataScope' => self::DATA_SCOPE_PRODUCT,
+                                    'disabled' => false,
                                     'sortOrder' => $this->getNextGroupSortOrder(
                                         $meta,
                                         'search-engine-optimization',
@@ -156,7 +144,6 @@ class Websites extends AbstractModifier
      * Prepares children for the parent fieldset
      *
      * @return array
-     * @since 101.0.0
      */
     protected function getFieldsForFieldset()
     {
@@ -167,8 +154,8 @@ class Websites extends AbstractModifier
         $tooltip = [
             'link' => 'http://docs.magento.com/m2/ce/user_guide/configuration/scope.html',
             'description' => __(
-                'If your Magento installation has multiple websites, ' .
-                'you can edit the scope to use the product on specific sites.'
+                'If your Magento site has multiple views, ' .
+                'you can set the scope to apply to a specific view.'
             ),
         ];
         $sortOrder = 0;
@@ -195,7 +182,6 @@ class Websites extends AbstractModifier
                                 'false' => '0',
                             ],
                             'value' => $isChecked ? (string)$website['id'] : '0',
-                            'disabled' => $this->locator->getProduct()->isLockedAttribute('website_ids'),
                         ],
                     ],
                 ],
@@ -220,7 +206,6 @@ class Websites extends AbstractModifier
      * @param int $websiteId
      * @param int $sortOrder
      * @return array
-     * @since 101.0.0
      */
     protected function getDynamicRow($websiteId, $sortOrder)
     {
@@ -320,7 +305,6 @@ class Websites extends AbstractModifier
      * Manage options list for selects
      *
      * @return array
-     * @since 101.0.0
      */
     protected function getWebsitesOptions()
     {
@@ -332,7 +316,6 @@ class Websites extends AbstractModifier
 
     /**
      * @return array
-     * @since 101.0.0
      */
     protected function getWebsitesOptionsList()
     {
@@ -387,7 +370,6 @@ class Websites extends AbstractModifier
      *
      * @return array
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @since 101.0.0
      */
     protected function getWebsitesList()
     {
@@ -442,7 +424,6 @@ class Websites extends AbstractModifier
      * Return array of websites ids, assigned to the product
      *
      * @return array
-     * @since 101.0.0
      */
     protected function getWebsitesValues()
     {

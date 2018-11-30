@@ -13,22 +13,17 @@ define([
     'jquery/ui',
     'prototype',
     'form',
-    'validation',
-    'mage/translate'
+    'validation'
 ], function (jQuery, mageTemplate, rg) {
     'use strict';
 
     return function (config) {
-        var optionPanel = jQuery('#manage-options-panel'),
-            optionsValues = [],
-            editForm = jQuery('#edit_form'),
-            attributeOption = {
+        var attributeOption = {
                 table: $('attribute-options-table'),
                 itemCount: 0,
                 totalItems: 0,
                 rendered: 0,
                 template: mageTemplate('#row-template'),
-                newOptionClass: 'new-option',
                 isReadOnly: config.isReadOnly,
                 add: function (data, render) {
                     var isNewOption = false,
@@ -37,8 +32,7 @@ define([
                     if (typeof data.id == 'undefined') {
                         data = {
                             'id': 'option_' + this.itemCount,
-                            'sort_order': this.itemCount + 1,
-                            'rowClasses': this.newOptionClass
+                            'sort_order': this.itemCount + 1
                         };
                         isNewOption = true;
                     }
@@ -89,10 +83,6 @@ define([
                         element.hide();
                         this.totalItems--;
                         this.updateItemsCountField();
-                    }
-
-                    if (element.hasClassName(this.newOptionClass)) {
-                        element.remove();
                     }
                 },
                 updateItemsCountField: function () {
@@ -154,7 +144,7 @@ define([
             attributeOption.remove(event);
         });
 
-        optionPanel.on('render', function () {
+        jQuery('#manage-options-panel').on('render', function () {
             attributeOption.ignoreValidate();
 
             if (attributeOption.rendered) {
@@ -180,31 +170,7 @@ define([
                 });
             });
         }
-        editForm.on('submit', function () {
-            optionPanel.find('input')
-                .each(function () {
-                    if (this.disabled) {
-                        return;
-                    }
 
-                    if (this.type === 'checkbox' || this.type === 'radio') {
-                        if (this.checked) {
-                            optionsValues.push(this.name + '=' + jQuery(this).val());
-                        }
-                    } else {
-                        optionsValues.push(this.name + '=' + jQuery(this).val());
-                    }
-                });
-            jQuery('<input>')
-                .attr({
-                    type: 'hidden',
-                    name: 'serialized_options'
-                })
-                .val(JSON.stringify(optionsValues))
-                .prependTo(editForm);
-            optionPanel.find('table')
-                .replaceWith(jQuery('<div>').text(jQuery.mage.__('Sending attribute values as package.')));
-        });
         window.attributeOption = attributeOption;
         window.optionDefaultInputType = attributeOption.getOptionInputType();
 

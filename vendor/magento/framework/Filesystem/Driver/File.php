@@ -528,7 +528,7 @@ class File implements DriverInterface
     public function filePutContents($path, $content, $mode = null)
     {
         $result = @file_put_contents($this->getScheme() . $path, $content, $mode);
-        if ($result === false) {
+        if (!$result) {
             throw new FileSystemException(
                 new \Magento\Framework\Phrase(
                     'The specified "%1" file could not be written %2',
@@ -943,6 +943,13 @@ class File implements DriverInterface
         if (strpos($path, DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR) === false) {
             return $path;
         }
+
+        //Removing redundant directory separators.
+        $path = preg_replace(
+            '/\\' . DIRECTORY_SEPARATOR . '\\' . DIRECTORY_SEPARATOR . '+/',
+            DIRECTORY_SEPARATOR,
+            $path
+        );
         $pathParts = explode(DIRECTORY_SEPARATOR, $path);
         $realPath = [];
         foreach ($pathParts as $pathPart) {

@@ -3,9 +3,6 @@
  * See COPYING.txt for license details.
  */
 
-/**
- * @api
- */
 define([
     'underscore',
     'mageUtils',
@@ -49,6 +46,9 @@ define([
                         options: '${ JSON.stringify($.$data.column.options) }'
                     }
                 }
+            },
+            ignoreTmpls: {
+                data: true
             },
             listens: {
                 elems: 'updateFields',

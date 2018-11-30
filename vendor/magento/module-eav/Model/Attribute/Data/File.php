@@ -11,8 +11,7 @@ use Magento\Framework\App\RequestInterface;
 /**
  * EAV Entity Attribute File Data Model
  *
- * @api
- * @since 100.0.2
+ * @author      Magento Core Team <core@magentocommerce.com>
  */
 class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
 {
@@ -120,8 +119,7 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
     }
 
     /**
-     * Validate file by attribute validate rules
-     * Return array of errors
+     * Validate file by attribute validate rules and return array of errors.
      *
      * @param array $value
      * @return string[]
@@ -147,7 +145,7 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
             return $this->_fileValidator->getMessages();
         }
 
-        if (!is_uploaded_file($value['tmp_name'])) {
+        if (!empty($value['tmp_name']) && !is_uploaded_file($value['tmp_name'])) {
             return [__('"%1" is not a valid file.', $label)];
         }
 
@@ -174,12 +172,23 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
         if ($this->getIsAjaxRequest()) {
             return true;
         }
+        $fileData = $value;
+
+        if (is_string($value) && !empty($value)) {
+            $dir = $this->_directory->getAbsolutePath($this->getAttribute()->getEntityType()->getEntityTypeCode());
+            $fileData = [
+                'size' => filesize($dir . $value),
+                'name' => $value,
+                'tmp_name' => $dir . $value,
+            ];
+        }
 
         $errors = [];
         $attribute = $this->getAttribute();
+        $label = $attribute->getStoreLabel();
 
         $toDelete = !empty($value['delete']) ? true : false;
-        $toUpload = !empty($value['tmp_name']) ? true : false;
+        $toUpload = !empty($value['tmp_name']) || is_string($value) && !empty($value) ? true : false;
 
         if (!$toUpload && !$toDelete && $this->getEntity()->getData($attribute->getAttributeCode())) {
             return true;
@@ -190,16 +199,17 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
         }
 
         if ($attribute->getIsRequired() && !$toUpload) {
-            $label = __($attribute->getStoreLabel());
             $errors[] = __('"%1" is a required value.', $label);
         }
 
         if ($toUpload) {
-            $errors = array_merge($errors, $this->_validateByRules($value));
+            $errors = array_merge($errors, $this->_validateByRules($fileData));
         }
 
         if (count($errors) == 0) {
             return true;
+        } elseif (is_string($value) && !empty($value)) {
+            $this->_directory->delete($dir . $value);
         }
 
         return $errors;
@@ -230,7 +240,7 @@ class File extends \Magento\Eav\Model\Attribute\Data\AbstractData
             }
         }
 
-        $destinationFolder = $attribute->getEntityType()->getEntityTypeCode();
+        $destinationFolder = $attribute->getEntity()->getEntityTypeCode();
 
         // unlink entity file
         if ($toDelete) {

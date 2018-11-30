@@ -10,18 +10,18 @@ namespace Magento\ImportExport\Model;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\HTTP\Adapter\FileTransferFactory;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\ImportExport\Model\Import\ErrorProcessing\ProcessingError;
 use Magento\ImportExport\Model\Import\ErrorProcessing\ProcessingErrorAggregatorInterface;
 
 /**
  * Import model
  *
- * @api
+ * @author      Magento Core Team <core@magentocommerce.com>
  *
  * @method string getBehavior() getBehavior()
  * @method \Magento\ImportExport\Model\Import setEntity() setEntity(string $value)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- * @since 100.0.2
  */
 class Import extends \Magento\ImportExport\Model\AbstractModel
 {
@@ -80,6 +80,11 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
     const FIELD_FIELD_MULTIPLE_VALUE_SEPARATOR = '_import_multiple_value_separator';
 
     /**
+     * Import empty attribute value constant.
+     */
+    const FIELD_EMPTY_ATTRIBUTE_VALUE_CONSTANT = '_import_empty_attribute_value_constant';
+
+    /**
      * Allow multiple values wrapping in double quotes for additional attributes.
      */
     const FIELDS_ENCLOSURE = 'fields_enclosure';
@@ -90,6 +95,11 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
      * default delimiter for several values in one cell as default for FIELD_FIELD_MULTIPLE_VALUE_SEPARATOR
      */
     const DEFAULT_GLOBAL_MULTI_VALUE_SEPARATOR = ',';
+
+    /**
+     * default empty attribute value constant
+     */
+    const DEFAULT_EMPTY_ATTRIBUTE_VALUE_CONSTANT = '__EMPTY__VALUE__';
 
     /**#@+
      * Import constants
@@ -104,7 +114,11 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
 
     /**#@-*/
 
-    /**#@-*/
+    /**
+     * Entity adapter.
+     *
+     * @var \Magento\ImportExport\Model\Import\Entity\AbstractEntity
+     */
     protected $_entityAdapter;
 
     /**
@@ -160,6 +174,16 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
     protected $_filesystem;
 
     /**
+     * @var History
+     */
+    private $importHistoryModel;
+
+    /**
+     * @var DateTime
+     */
+    private $localeDate;
+
+    /**
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\Filesystem $filesystem
      * @param \Magento\ImportExport\Helper\Data $importExportData
@@ -173,7 +197,7 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
      * @param Source\Import\Behavior\Factory $behaviorFactory
      * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
      * @param History $importHistoryModel
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime
+     * @param DateTime $localeDate
      * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -191,7 +215,7 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
         \Magento\ImportExport\Model\Source\Import\Behavior\Factory $behaviorFactory,
         \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
         \Magento\ImportExport\Model\History $importHistoryModel,
-        \Magento\Framework\Stdlib\DateTime\DateTime $localeDate,
+        DateTime $localeDate,
         array $data = []
     ) {
         $this->_importExportData = $importExportData;
@@ -234,7 +258,9 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
                 ) {
                     throw new \Magento\Framework\Exception\LocalizedException(
                         __(
-                            'The entity adapter object must be an instance of %1 or %2.', \Magento\ImportExport\Model\Import\Entity\AbstractEntity::class, \Magento\ImportExport\Model\Import\AbstractEntity::class
+                            'The entity adapter object must be an instance of %1 or %2.',
+                            \Magento\ImportExport\Model\Import\Entity\AbstractEntity::class,
+                            \Magento\ImportExport\Model\Import\AbstractEntity::class
                         )
                     );
                 }
@@ -434,11 +460,28 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
 
     /**
      * @return bool
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function processImport()
     {
-        return $this->_getEntityAdapter()->importData();
+        $errorAggregator = $this->_getEntityAdapter()->getErrorAggregator();
+        $errorAggregator->initValidationStrategy(
+            $this->getData(self::FIELD_NAME_VALIDATION_STRATEGY),
+            $this->getData(self::FIELD_NAME_ALLOWED_ERROR_COUNT)
+        );
+        try {
+            $this->_getEntityAdapter()->importData();
+        } catch (\Exception $e) {
+            $errorAggregator->addError(
+                \Magento\ImportExport\Model\Import\Entity\AbstractEntity::ERROR_CODE_SYSTEM_EXCEPTION,
+                ProcessingError::ERROR_LEVEL_CRITICAL,
+                null,
+                null,
+                null,
+                $e->getMessage()
+            );
+        }
+
+        return !$errorAggregator->hasToBeTerminated();
     }
 
     /**
@@ -513,14 +556,28 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
         }
         $this->_removeBom($sourceFile);
         $this->createHistoryReport($sourceFileRelative, $entity, $extension, $result);
-        // trying to create source adapter for file and catch possible exception to be convinced in its adequacy
+
+        return $sourceFile;
+    }
+
+    /**
+     * Move uploaded file and provide source instance.
+     *
+     * @return Import\AbstractSource
+     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function uploadFileAndGetSource()
+    {
+        $sourceFile = $this->uploadSource();
         try {
-            $this->_getSourceAdapter($sourceFile);
+            $source = $this->_getSourceAdapter($sourceFile);
         } catch (\Exception $e) {
-            $this->_varDirectory->delete($sourceFileRelative);
+            $this->_varDirectory->delete($this->_varDirectory->getRelativePath($sourceFile));
             throw new \Magento\Framework\Exception\LocalizedException(__($e->getMessage()));
         }
-        return $sourceFile;
+
+        return $source;
     }
 
     /**
@@ -567,6 +624,7 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
                 ProcessingError::ERROR_LEVEL_CRITICAL,
                 null,
                 null,
+                null,
                 $e->getMessage()
             );
         }
@@ -596,7 +654,6 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
         foreach (array_keys($relatedIndexers) as $indexerId) {
             try {
                 $indexer = $this->indexerRegistry->get($indexerId);
-
                 if (!$indexer->isScheduled()) {
                     $indexer->invalidate();
                 }
@@ -684,7 +741,9 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
                 try {
                     $result = $this->_getEntityAdapter()->isNeedToLogInHistory();
                 } catch (\Exception $e) {
-                    throw new \Magento\Framework\Exception\LocalizedException(__('Please enter a correct entity model'));
+                    throw new \Magento\Framework\Exception\LocalizedException(
+                        __('Please enter a correct entity model')
+                    );
                 }
             } else {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Please enter a correct entity model'));
@@ -696,11 +755,11 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
     }
 
     /**
-     * Create history report
+     * Create history report.
      *
+     * @param string $sourceFileRelative
      * @param string $entity
      * @param string $extension
-     * @param string $sourceFileRelative
      * @param array $result
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -713,7 +772,7 @@ class Import extends \Magento\ImportExport\Model\AbstractModel
                 $sourceFileRelative = $this->_varDirectory->getRelativePath(self::IMPORT_DIR . $fileName);
             } elseif (isset($result['name'])) {
                 $fileName = $result['name'];
-            } elseif (!is_null($extension)) {
+            } elseif ($extension !== null) {
                 $fileName = $entity . $extension;
             } else {
                 $fileName = basename($sourceFileRelative);

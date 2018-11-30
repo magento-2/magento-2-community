@@ -3,7 +3,6 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
 
 namespace Magento\Captcha\Test\Unit\Observer;
 
@@ -24,7 +23,7 @@ use Magento\Quote\Model\Quote;
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class CheckGuestCheckoutObserverTest extends \PHPUnit\Framework\TestCase
+class CheckGuestCheckoutObserverTest extends \PHPUnit_Framework_TestCase
 {
     const FORM_ID = 'guest_checkout';
 
@@ -85,18 +84,18 @@ class CheckGuestCheckoutObserverTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $onepageModelTypeMock = $this->createMock(Onepage::class);
-        $captchaHelperMock = $this->createMock(CaptchaDataHelper::class);
+        $onepageModelTypeMock = $this->getMock(Onepage::class, [], [], '', false);
+        $captchaHelperMock = $this->getMock(CaptchaDataHelper::class, [], [], '', false);
         $this->objectManager = new ObjectManager($this);
-        $this->actionFlagMock = $this->createMock(ActionFlag::class);
-        $this->captchaStringResolverMock = $this->createMock(CaptchaStringResolver::class);
-        $this->captchaModelMock = $this->createMock(CaptchaModel::class);
-        $this->quoteModelMock = $this->createMock(Quote::class);
-        $this->controllerMock = $this->createMock(Action::class);
-        $this->requestMock = $this->createMock(Http::class);
-        $this->responseMock = $this->createMock(HttpResponse::class);
+        $this->actionFlagMock = $this->getMock(ActionFlag::class, [], [], '', false);
+        $this->captchaStringResolverMock = $this->getMock(CaptchaStringResolver::class, [], [], '', false);
+        $this->captchaModelMock = $this->getMock(CaptchaModel::class, [], [], '', false);
+        $this->quoteModelMock = $this->getMock(Quote::class, [], [], '', false);
+        $this->controllerMock = $this->getMock(Action::class, [], [], '', false);
+        $this->requestMock = $this->getMock(Http::class, [], [], '', false);
+        $this->responseMock = $this->getMock(HttpResponse::class, [], [], '', false);
         $this->observer = new Observer(['controller_action' => $this->controllerMock]);
-        $this->jsonHelperMock = $this->createMock(JsonHelper::class);
+        $this->jsonHelperMock = $this->getMock(JsonHelper::class, [], [], '', false);
 
         $this->checkGuestCheckoutObserver = $this->objectManager->getObject(
             CheckGuestCheckoutObserver::class,

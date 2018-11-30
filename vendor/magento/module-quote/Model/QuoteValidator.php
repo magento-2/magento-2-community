@@ -6,49 +6,14 @@
 
 namespace Magento\Quote\Model;
 
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote as QuoteEntity;
-use Magento\Directory\Model\AllowedCountries;
-use Magento\Framework\App\ObjectManager;
-use Magento\Quote\Model\Quote\Validator\MinimumOrderAmount\ValidationMessage as OrderAmountValidationMessage;
-use \Magento\Store\Model\ScopeInterface;
 
-/**
- * @api
- * @since 100.0.2
- */
 class QuoteValidator
 {
     /**
      * Maximum available number
      */
     const MAXIMUM_AVAILABLE_NUMBER = 99999999;
-
-    /**
-     * @var AllowedCountries
-     */
-    private $allowedCountryReader;
-
-    /**
-     * @var OrderAmountValidationMessage
-     */
-    private $minimumAmountMessage;
-
-    /**
-     * QuoteValidator constructor.
-     *
-     * @param AllowedCountries|null $allowedCountryReader
-     * @param OrderAmountValidationMessage|null $minimumAmountMessage
-     */
-    public function __construct(
-        AllowedCountries $allowedCountryReader = null,
-        OrderAmountValidationMessage $minimumAmountMessage = null
-    ) {
-        $this->allowedCountryReader = $allowedCountryReader ?: ObjectManager::getInstance()
-            ->get(AllowedCountries::class);
-        $this->minimumAmountMessage = $minimumAmountMessage ?: ObjectManager::getInstance()
-            ->get(OrderAmountValidationMessage::class);
-    }
 
     /**
      * Validate quote amount
@@ -76,36 +41,21 @@ class QuoteValidator
     public function validateBeforeSubmit(QuoteEntity $quote)
     {
         if (!$quote->isVirtual()) {
-            $address = $quote->getShippingAddress();
-            $address->setStoreId($quote->getStoreId());
-            if ($address->validate() !== true) {
+            if ($quote->getShippingAddress()->validate() !== true) {
                 throw new \Magento\Framework\Exception\LocalizedException(
                     __(
                         'Please check the shipping address information. %1',
-                        implode(' ', $address->validate())
+                        implode(' ', $quote->getShippingAddress()->validate())
                     )
                 );
             }
-
-            // Checks if country id present in the allowed countries list.
-            if (!in_array(
-                $address->getCountryId(),
-                $this->allowedCountryReader->getAllowedCountries(ScopeInterface::SCOPE_STORE, $quote->getStoreId())
-            )) {
-                throw new \Magento\Framework\Exception\LocalizedException(
-                    __('Some addresses cannot be used due to country-specific configurations.')
-                );
-            }
-
-            $method = $address->getShippingMethod();
-            $rate = $address->getShippingRateByCode($method);
-            if (!$method || !$rate) {
+            $method = $quote->getShippingAddress()->getShippingMethod();
+            $rate = $quote->getShippingAddress()->getShippingRateByCode($method);
+            if (!$quote->isVirtual() && (!$method || !$rate)) {
                 throw new \Magento\Framework\Exception\LocalizedException(__('Please specify a shipping method.'));
             }
         }
-        $billingAddress = $quote->getBillingAddress();
-        $billingAddress->setStoreId($quote->getStoreId());
-        if ($billingAddress->validate() !== true) {
+        if ($quote->getBillingAddress()->validate() !== true) {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __(
                     'Please check the billing address information. %1',
@@ -116,10 +66,6 @@ class QuoteValidator
         if (!$quote->getPayment()->getMethod()) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Please select a valid payment method.'));
         }
-        if (!$quote->validateMinimumAmount($quote->getIsMultiShipping())) {
-            throw new LocalizedException($this->minimumAmountMessage->getMessage());
-        }
-
         return $this;
     }
 }
